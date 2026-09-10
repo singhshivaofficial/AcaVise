@@ -8,67 +8,58 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { User, Bell, Palette, GraduationCap, Save, Check } from "lucide-react";
-import { MOCK_USER } from "@/lib/mock-data";
+import { useAcademicPreferences } from "@/lib/academic-context";
 
 export default function SettingsPage() {
+  const { settings, updateSettings, isHydrated } = useAcademicPreferences();
+
   const [profile, setProfile] = React.useState({
-    name: MOCK_USER.name,
-    email: MOCK_USER.email,
-    university: MOCK_USER.university,
-    branch: MOCK_USER.branch,
-    semester: String(MOCK_USER.semester),
-    targetCgpa: String(MOCK_USER.targetCgpa),
+    name: settings.profile.name,
+    email: settings.profile.email,
+    university: settings.profile.university,
+    branch: settings.profile.branch,
+    semester: String(settings.profile.semester),
+    targetCgpa: String(settings.profile.targetCgpa),
   });
 
-  const [academicRules, setAcademicRules] = React.useState({
-    gradingScale: "10",
-    attendanceThreshold: "75",
-    totalCredits: "120",
-    weightRatio: "50-50",
-  });
-
-  const [theme, setTheme] = React.useState<"light" | "dark" | "system">("light");
-
-  const [notifications, setNotifications] = React.useState({
-    examCountdown: true,
-    attendanceWarning: true,
-    weeklyDigest: false,
-  });
-
+  const [academicRules, setAcademicRules] = React.useState(settings.academicRules);
+  const [theme, setTheme] = React.useState<"light" | "dark" | "system">(settings.theme);
+  const [notifications, setNotifications] = React.useState(settings.notifications);
   const [isSaved, setIsSaved] = React.useState(false);
 
-  // Load from localStorage on mount
+  // Sync state when context is hydrated
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("acavise_settings");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed.profile) setProfile(parsed.profile);
-          if (parsed.academicRules) setAcademicRules(parsed.academicRules);
-          if (parsed.theme) setTheme(parsed.theme);
-          if (parsed.notifications) setNotifications(parsed.notifications);
-        } catch {
-          // ignore
-        }
-      }
+    if (isHydrated) {
+      setProfile({
+        name: settings.profile.name,
+        email: settings.profile.email,
+        university: settings.profile.university,
+        branch: settings.profile.branch,
+        semester: String(settings.profile.semester),
+        targetCgpa: String(settings.profile.targetCgpa),
+      });
+      setAcademicRules(settings.academicRules);
+      setTheme(settings.theme);
+      setNotifications(settings.notifications);
     }
-  }, []);
+  }, [isHydrated, settings]);
 
   const handleSave = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    if (typeof window !== "undefined") {
-      const payload = {
-        profile,
-        academicRules,
-        theme,
-        notifications,
-        updatedAt: new Date().toISOString(),
-      };
-      localStorage.setItem("acavise_settings", JSON.stringify(payload));
-      localStorage.setItem("acavise_target_cgpa", profile.targetCgpa);
-    }
+    updateSettings({
+      profile: {
+        name: profile.name,
+        email: profile.email,
+        university: profile.university,
+        branch: profile.branch,
+        semester: parseInt(profile.semester, 10) || 5,
+        targetCgpa: parseFloat(profile.targetCgpa) || 8.8,
+      },
+      academicRules,
+      theme,
+      notifications,
+    });
 
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);

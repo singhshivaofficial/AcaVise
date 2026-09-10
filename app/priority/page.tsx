@@ -17,14 +17,24 @@ import {
   BookOpen,
   Check,
 } from "lucide-react";
-import { MOCK_PRIORITY_ITEMS } from "@/lib/mock-data";
+import { useAcademicPreferences } from "@/lib/academic-context";
+import { SEMESTER_PRIORITIES_DEFAULT } from "@/lib/mock-data";
 
 export default function PriorityPage() {
-  const [selectedSemester, setSelectedSemester] = React.useState("5");
+  const { currentSemester } = useAcademicPreferences();
+  const [selectedSemester, setSelectedSemester] = React.useState(currentSemester || "5");
   const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({
     pri_1: true,
   });
   const [downloadSuccess, setDownloadSuccess] = React.useState(false);
+
+  // Sync selected semester with global currentSemester if updated
+  React.useEffect(() => {
+    setSelectedSemester(currentSemester);
+  }, [currentSemester]);
+
+  const currentPriorities =
+    SEMESTER_PRIORITIES_DEFAULT[selectedSemester] || SEMESTER_PRIORITIES_DEFAULT["5"] || [];
 
   const toggleExpand = (id: string) => {
     setExpandedCards((prev) => ({
@@ -40,7 +50,7 @@ Semester: ${selectedSemester}
 Generated on: ${new Date().toLocaleDateString()}
 ========================================================
 
-${MOCK_PRIORITY_ITEMS.map(
+${currentPriorities.map(
   (item) => `[RANK #${item.rank}] ${item.subjectName} (${item.subjectCode})
 • Priority Score: ${item.priorityScore}/100 [${item.urgency} Urgency]
 • Weight: ${item.creditWeight} Credits (${item.impactFactor})
@@ -94,9 +104,11 @@ AcaVise Academic Visibility & Intelligence Platform
               aria-label="Filter by semester"
               className="h-9 px-3 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
-              <option value="5">Semester 5 (Active)</option>
-              <option value="4">Semester 4 (Past)</option>
-              <option value="3">Semester 3 (Past)</option>
+              {["1", "2", "3", "4", "5", "6", "7", "8"].map((sem) => (
+                <option key={sem} value={sem}>
+                  Semester {sem} {sem === currentSemester ? "(Active)" : parseInt(sem, 10) < parseInt(currentSemester, 10) ? "(Past)" : "(Upcoming)"}
+                </option>
+              ))}
             </select>
 
             <Button onClick={handleExport} size="sm" className="gap-1.5 text-xs">
@@ -120,14 +132,14 @@ AcaVise Academic Visibility & Intelligence Platform
           <Card className="p-4 bg-rose-50/50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold">
-                2
+                {currentPriorities.filter((p) => p.urgency === "High").length}
               </div>
               <div>
                 <p className="text-xs text-rose-800 dark:text-rose-300 font-semibold uppercase tracking-wider">
                   Critical / High Urgency
                 </p>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  CS501 (Algorithms), CS504 (Discrete)
+                <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                  {currentPriorities.filter((p) => p.urgency === "High").map((p) => p.subjectCode).join(", ") || "None"}
                 </p>
               </div>
             </div>
@@ -136,14 +148,14 @@ AcaVise Academic Visibility & Intelligence Platform
           <Card className="p-4 bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold">
-                1
+                {currentPriorities.filter((p) => p.urgency === "Medium").length}
               </div>
               <div>
                 <p className="text-xs text-amber-800 dark:text-amber-300 font-semibold uppercase tracking-wider">
                   Moderate Priority
                 </p>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  CS502 (Computer Org)
+                <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                  {currentPriorities.filter((p) => p.urgency === "Medium").map((p) => p.subjectCode).join(", ") || "None"}
                 </p>
               </div>
             </div>
@@ -152,14 +164,14 @@ AcaVise Academic Visibility & Intelligence Platform
           <Card className="p-4 bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
-                2
+                {currentPriorities.filter((p) => p.urgency === "Low").length}
               </div>
               <div>
                 <p className="text-xs text-emerald-800 dark:text-emerald-300 font-semibold uppercase tracking-wider">
                   Stable Standing
                 </p>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  CS503 (DBMS), CS505 (OS Lab)
+                <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                  {currentPriorities.filter((p) => p.urgency === "Low").map((p) => p.subjectCode).join(", ") || "None"}
                 </p>
               </div>
             </div>
@@ -168,7 +180,7 @@ AcaVise Academic Visibility & Intelligence Platform
 
         {/* Detailed Ranked List with Accordion */}
         <div className="space-y-4">
-          {MOCK_PRIORITY_ITEMS.map((item) => {
+          {currentPriorities.map((item) => {
             const isExpanded = !!expandedCards[item.id];
 
             return (

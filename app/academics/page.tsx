@@ -8,95 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { MOCK_SUBJECTS } from "@/lib/mock-data";
+import { useAcademicPreferences } from "@/lib/academic-context";
+import { SEMESTER_SUBJECTS_DEFAULT, SEMESTER_METRICS } from "@/lib/mock-data";
 import { Subject } from "@/types";
 import { Plus, BookOpen, Award, Percent, Eye, FileText, CheckCircle2 } from "lucide-react";
 
-const SEMESTER_DATA: Record<string, { label: string; sgpa: string; credits: number; status: string; subjects: Subject[] }> = {
-  "1": {
-    label: "Semester 1",
-    sgpa: "8.10",
-    credits: 22,
-    status: "Completed",
-    subjects: [
-      { id: "s1_1", code: "MA101", name: "Engineering Mathematics I", credits: 4, faculty: "Prof. R. Sen", currentScore: 82, targetGrade: "A+", attendance: 92, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [{ id: "1", title: "Final Grade", type: "endterm", maxMarks: 100, obtainedMarks: 82, weightagePercentage: 100 }] },
-      { id: "s1_2", code: "PH101", name: "Engineering Physics", credits: 4, faculty: "Dr. M. Roy", currentScore: 78, targetGrade: "A", attendance: 88, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [{ id: "2", title: "Final Grade", type: "endterm", maxMarks: 100, obtainedMarks: 78, weightagePercentage: 100 }] },
-      { id: "s1_3", code: "CS101", name: "Programming in C", credits: 4, faculty: "Dr. A. Verma", currentScore: 89, targetGrade: "O", attendance: 96, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [{ id: "3", title: "Final Grade", type: "endterm", maxMarks: 100, obtainedMarks: 89, weightagePercentage: 100 }] },
-      { id: "s1_4", code: "ME101", name: "Engineering Mechanics", credits: 3, faculty: "Prof. S. Das", currentScore: 75, targetGrade: "A", attendance: 85, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [{ id: "4", title: "Final Grade", type: "endterm", maxMarks: 100, obtainedMarks: 75, weightagePercentage: 100 }] },
-    ],
-  },
-  "2": {
-    label: "Semester 2",
-    sgpa: "8.25",
-    credits: 24,
-    status: "Completed",
-    subjects: [
-      { id: "s2_1", code: "MA102", name: "Engineering Mathematics II", credits: 4, faculty: "Prof. R. Sen", currentScore: 80, targetGrade: "A", attendance: 90, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [{ id: "5", title: "Final Grade", type: "endterm", maxMarks: 100, obtainedMarks: 80, weightagePercentage: 100 }] },
-      { id: "s2_2", code: "CS102", name: "Data Structures & Algorithms", credits: 4, faculty: "Dr. K. Raman", currentScore: 86, targetGrade: "A+", attendance: 94, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [{ id: "6", title: "Final Grade", type: "endterm", maxMarks: 100, obtainedMarks: 86, weightagePercentage: 100 }] },
-      { id: "s2_3", code: "EC101", name: "Basic Electronics", credits: 3, faculty: "Dr. N. Joshi", currentScore: 79, targetGrade: "A", attendance: 84, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [{ id: "7", title: "Final Grade", type: "endterm", maxMarks: 100, obtainedMarks: 79, weightagePercentage: 100 }] },
-    ],
-  },
-  "3": {
-    label: "Semester 3",
-    sgpa: "8.40",
-    credits: 25,
-    status: "Completed",
-    subjects: [
-      { id: "s3_1", code: "CS301", name: "Object Oriented Programming (Java)", credits: 4, faculty: "Prof. P. Bannerjee", currentScore: 88, targetGrade: "O", attendance: 95, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [] },
-      { id: "s3_2", code: "CS302", name: "Digital Logic & Design", credits: 4, faculty: "Dr. S. Mehra", currentScore: 83, targetGrade: "A+", attendance: 89, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [] },
-    ],
-  },
-  "4": {
-    label: "Semester 4",
-    sgpa: "8.24",
-    credits: 25,
-    status: "Completed",
-    subjects: [
-      { id: "s4_1", code: "CS401", name: "Operating Systems", credits: 4, faculty: "Dr. V. Rao", currentScore: 81, targetGrade: "A", attendance: 88, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [] },
-      { id: "s4_2", code: "CS402", name: "Theory of Computation", credits: 4, faculty: "Prof. N. Kulkarni", currentScore: 76, targetGrade: "A", attendance: 82, trend: "stable", trendValue: "Final", status: "Good Standing", assessments: [] },
-    ],
-  },
-  "5": {
-    label: "Semester 5 (Current)",
-    sgpa: "8.52 (Est)",
-    credits: 16,
-    status: "In Progress",
-    subjects: MOCK_SUBJECTS,
-  },
-  "6": {
-    label: "Semester 6",
-    sgpa: "—",
-    credits: 20,
-    status: "Upcoming",
-    subjects: [
-      { id: "s6_1", code: "CS601", name: "Compiler Design", credits: 4, faculty: "TBD", currentScore: 0, targetGrade: "A+", attendance: 100, trend: "stable", trendValue: "TBD", status: "Good Standing", assessments: [] },
-      { id: "s6_2", code: "CS602", name: "Computer Networks", credits: 4, faculty: "TBD", currentScore: 0, targetGrade: "O", attendance: 100, trend: "stable", trendValue: "TBD", status: "Good Standing", assessments: [] },
-    ],
-  },
-  "7": {
-    label: "Semester 7",
-    sgpa: "—",
-    credits: 18,
-    status: "Upcoming",
-    subjects: [
-      { id: "s7_1", code: "CS701", name: "Cloud Computing & DevOps", credits: 4, faculty: "TBD", currentScore: 0, targetGrade: "O", attendance: 100, trend: "stable", trendValue: "TBD", status: "Good Standing", assessments: [] },
-    ],
-  },
-  "8": {
-    label: "Semester 8",
-    sgpa: "—",
-    credits: 16,
-    status: "Upcoming",
-    subjects: [
-      { id: "s8_1", code: "CS801", name: "Major Project & Internship", credits: 12, faculty: "Department Committee", currentScore: 0, targetGrade: "O", attendance: 100, trend: "stable", trendValue: "TBD", status: "Good Standing", assessments: [] },
-    ],
-  },
-};
-
 export default function AcademicsPage() {
-  const [selectedSemester, setSelectedSemester] = React.useState("5");
+  const { currentSemester } = useAcademicPreferences();
+  const [selectedSemester, setSelectedSemester] = React.useState(currentSemester || "5");
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [selectedSubject, setSelectedSubject] = React.useState<Subject | null>(null);
+
+  // Sync viewed semester if currentSemester updates externally and user hasn't actively switched
+  React.useEffect(() => {
+    setSelectedSemester(currentSemester);
+  }, [currentSemester]);
 
   // Local subjects state with localStorage persistence
   const [semesterSubjects, setSemesterSubjects] = React.useState<Record<string, Subject[]>>(() => {
@@ -110,11 +36,7 @@ export default function AcademicsPage() {
         }
       }
     }
-    const initial: Record<string, Subject[]> = {};
-    Object.keys(SEMESTER_DATA).forEach((k) => {
-      initial[k] = SEMESTER_DATA[k].subjects;
-    });
-    return initial;
+    return SEMESTER_SUBJECTS_DEFAULT;
   });
 
   // Save to localStorage
@@ -134,8 +56,17 @@ export default function AcademicsPage() {
   });
   const [formError, setFormError] = React.useState("");
 
-  const currentSubjects = semesterSubjects[selectedSemester] || [];
-  const currentSemInfo = SEMESTER_DATA[selectedSemester] || { label: `Semester ${selectedSemester}`, sgpa: "—", credits: 0, status: "Unknown" };
+  const currentSubjects = semesterSubjects[selectedSemester] || SEMESTER_SUBJECTS_DEFAULT[selectedSemester] || [];
+  
+  const currentMetric = SEMESTER_METRICS[selectedSemester];
+  const isSelectedCurrent = selectedSemester === currentSemester;
+  const isSelectedPast = parseInt(selectedSemester, 10) < parseInt(currentSemester, 10);
+  const semStatus = isSelectedCurrent ? "In Progress" : isSelectedPast ? "Completed" : "Upcoming";
+  const semSgpa = isSelectedCurrent
+    ? `${currentMetric?.currentSgpa.toFixed(2) || "8.52"} (Est)`
+    : isSelectedPast
+    ? `${currentMetric?.currentSgpa.toFixed(2) || "8.20"}`
+    : "—";
 
   const totalCredits = currentSubjects.reduce((acc, s) => acc + s.credits, 0);
   const avgAttendance =
@@ -206,24 +137,43 @@ export default function AcademicsPage() {
 
         {/* Semester Selector Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {Object.entries(SEMESTER_DATA).map(([id, sem]) => (
-            <button
-              key={id}
-              onClick={() => setSelectedSemester(id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
-                selectedSemester === id
-                  ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                  : "bg-white text-slate-700 hover:bg-slate-100 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800"
-              }`}
-            >
-              <span>{sem.label}</span>
-              {sem.status === "In Progress" && (
-                <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-white/20">
-                  Active
-                </span>
-              )}
-            </button>
-          ))}
+          {["1", "2", "3", "4", "5", "6", "7", "8"].map((semId) => {
+            const isCurrent = semId === currentSemester;
+            const isPast = parseInt(semId, 10) < parseInt(currentSemester, 10);
+            const isSelected = selectedSemester === semId;
+
+            return (
+              <button
+                key={semId}
+                onClick={() => setSelectedSemester(semId)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer flex items-center gap-1.5 ${
+                  isSelected
+                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800"
+                }`}
+              >
+                <span>Semester {semId}</span>
+                {isCurrent && (
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      isSelected ? "bg-white/20 text-white" : "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                    }`}
+                  >
+                    Current
+                  </span>
+                )}
+                {!isCurrent && isPast && (
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                      isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                    }`}
+                  >
+                    Past
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Semester Summary Banner */}
@@ -235,7 +185,7 @@ export default function AcademicsPage() {
               </div>
               <div>
                 <p className="text-xs text-slate-500 font-medium">Semester SGPA</p>
-                <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{currentSemInfo.sgpa}</p>
+                <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{semSgpa}</p>
               </div>
             </div>
           </Card>
@@ -272,13 +222,16 @@ export default function AcademicsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>{currentSemInfo.label} Courses & Assessments</CardTitle>
+                <CardTitle>
+                  Semester {selectedSemester} Courses & Assessments{" "}
+                  {isSelectedCurrent && <span className="text-xs text-blue-600 font-semibold">(Current Active)</span>}
+                </CardTitle>
                 <CardDescription>
                   Click any subject row to inspect continuous internal evaluations and exam weights.
                 </CardDescription>
               </div>
-              <Badge variant={currentSemInfo.status === "Completed" ? "success" : currentSemInfo.status === "In Progress" ? "default" : "secondary"}>
-                {currentSemInfo.status}
+              <Badge variant={semStatus === "Completed" ? "success" : semStatus === "In Progress" ? "default" : "secondary"}>
+                {semStatus}
               </Badge>
             </div>
           </CardHeader>
@@ -374,7 +327,7 @@ export default function AcademicsPage() {
             setIsAddModalOpen(false);
             setFormError("");
           }}
-          title={`Add Enrolled Subject (${currentSemInfo.label})`}
+          title={`Add Enrolled Subject (Semester ${selectedSemester})`}
           description="Register a course into this semester. Saved to prototype local state."
         >
           <form onSubmit={handleAddSubject} className="space-y-4">

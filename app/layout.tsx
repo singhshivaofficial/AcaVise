@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AcademicProvider } from "@/lib/academic-context";
 
 export const metadata: Metadata = {
   title: "AcaVise — Academic Visibility & Intelligence Platform",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="h-full antialiased selection:bg-blue-600 selection:text-white">
-        {children}
+        <AcademicProvider>
+          {children}
+        </AcademicProvider>
       </body>
     </html>
   );

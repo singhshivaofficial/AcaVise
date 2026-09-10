@@ -6,9 +6,10 @@ import { AcademicMetric, UpcomingEvent } from "@/types";
 interface StatGridProps {
   metrics: AcademicMetric;
   nextEvent?: UpcomingEvent;
+  currentSemester?: string;
 }
 
-export function StatGrid({ metrics, nextEvent }: StatGridProps) {
+export function StatGrid({ metrics, nextEvent, currentSemester = "5" }: StatGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
@@ -20,10 +21,10 @@ export function StatGrid({ metrics, nextEvent }: StatGridProps) {
       />
 
       <StatCard
-        title="Current SGPA (Sem 5)"
+        title={`Current SGPA (Sem ${currentSemester})`}
         value={metrics.currentSgpa.toFixed(2)}
         subtitle="Expected based on internal marks"
-        trend={{ value: "+0.28 vs Sem 4", positive: true }}
+        trend={{ value: "On track", positive: true }}
         icon={<BookOpen className="h-5 w-5" />}
       />
 

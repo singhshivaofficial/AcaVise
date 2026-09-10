@@ -7,23 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Calculator, Target, Sparkles, HelpCircle, RotateCcw, CheckCircle2, AlertTriangle } from "lucide-react";
-import { MOCK_SUBJECTS } from "@/lib/mock-data";
+import { useAcademicPreferences } from "@/lib/academic-context";
 
 export default function TargetsPage() {
-  const [targetCgpaInput, setTargetCgpaInput] = React.useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("acavise_target_cgpa");
-      if (saved) return saved;
-    }
-    return "8.80";
-  });
-
+  const { targetCgpa, setTargetCgpa, currentSemester, subjects, metrics } = useAcademicPreferences();
+  const [targetCgpaInput, setTargetCgpaInput] = React.useState<string>(targetCgpa.toFixed(2));
   const [isCalculated, setIsCalculated] = React.useState(false);
 
-  const currentCgpa = 8.34;
-  const completedCredits = 96;
+  React.useEffect(() => {
+    setTargetCgpaInput(targetCgpa.toFixed(2));
+  }, [targetCgpa]);
+
+  const currentCgpa = metrics.cgpa;
+  const currentSemNum = parseInt(currentSemester, 10) || 5;
+  const completedCredits = Math.max(20, (currentSemNum - 1) * 24);
   const totalDegreeCredits = 120;
-  const remainingCredits = totalDegreeCredits - completedCredits; // 24 credits (Sem 5 & 6)
+  const remainingCredits = Math.max(16, totalDegreeCredits - completedCredits);
 
   const targetCgpaNum = parseFloat(targetCgpaInput) || 8.8;
 
@@ -54,9 +53,7 @@ export default function TargetsPage() {
 
   const handleCalculate = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (typeof window !== "undefined") {
-      localStorage.setItem("acavise_target_cgpa", targetCgpaInput);
-    }
+    setTargetCgpa(targetCgpaNum);
     setIsCalculated(true);
     setTimeout(() => setIsCalculated(false), 2000);
   };
@@ -205,10 +202,10 @@ export default function TargetsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
-                  {MOCK_SUBJECTS.map((sub, i) => {
+                  {subjects.map((sub, i) => {
                     // Dynamic mark offset based on target SGPA
                     const delta = (rawRequiredSgpa - 8.5) * 6;
-                    const baseMarks = [84, 78, 72, 88, 80][i] || 75;
+                    const baseMarks = [84, 78, 72, 88, 80][i % 5] || 75;
                     const computedMarks = Math.min(100, Math.max(40, Math.round(baseMarks + delta)));
                     const diff =
                       computedMarks > 88

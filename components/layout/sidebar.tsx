@@ -16,6 +16,7 @@ import {
   BookOpenCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAcademicPreferences } from "@/lib/academic-context";
 
 export const NAV_ITEMS = [
   {
@@ -69,6 +70,9 @@ interface SidebarProps {
 
 export function Sidebar({ className, onItemClick }: SidebarProps) {
   const pathname = usePathname();
+  const { currentSemester, profile, targetCgpa, metrics } = useAcademicPreferences();
+
+  const percentage = Math.min(100, Math.max(0, (metrics.cgpa / targetCgpa) * 100));
 
   return (
     <aside
@@ -158,13 +162,15 @@ export function Sidebar({ className, onItemClick }: SidebarProps) {
             <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
             <span>Target Progress</span>
           </div>
-          <span className="text-xs font-bold text-blue-600 dark:text-blue-400">8.34 / 8.80</span>
+          <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+            {metrics.cgpa.toFixed(2)} / {targetCgpa.toFixed(2)}
+          </span>
         </div>
         <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-          <div className="bg-blue-600 h-full rounded-full" style={{ width: "83%" }} />
+          <div className="bg-blue-600 h-full rounded-full" style={{ width: `${percentage}%` }} />
         </div>
         <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-          <span>Semester 5 • CSE</span>
+          <span>Semester {currentSemester} • CSE</span>
           <Link href="/targets" className="text-blue-600 hover:underline flex items-center">
             View <ChevronRight className="h-3 w-3" />
           </Link>
@@ -184,10 +190,10 @@ export function Sidebar({ className, onItemClick }: SidebarProps) {
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-              Alex Rivera
+              {profile.name}
             </span>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-              alex.rivera@univ.edu
+              Sem {currentSemester} • {profile.email}
             </span>
           </div>
         </Link>
