@@ -14,17 +14,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm focus-visible:ring-blue-500 shadow-blue-500/10",
+        "bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white dark:active:bg-neutral-200 shadow-xs focus-visible:ring-slate-900 dark:focus-visible:ring-neutral-100",
       secondary:
-        "bg-slate-100 text-slate-900 hover:bg-slate-200 active:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 focus-visible:ring-slate-400",
+        "bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 focus-visible:ring-slate-400",
       outline:
-        "border border-slate-300 bg-transparent hover:bg-slate-50 text-slate-800 active:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 focus-visible:ring-slate-400",
+        "border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 active:bg-slate-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 focus-visible:ring-slate-400",
       ghost:
-        "bg-transparent hover:bg-slate-100 text-slate-700 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 focus-visible:ring-slate-400",
+        "bg-transparent hover:bg-slate-100 text-slate-700 active:bg-slate-200 dark:text-neutral-300 dark:hover:bg-neutral-800 focus-visible:ring-slate-400",
       destructive:
-        "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-sm focus-visible:ring-rose-500 shadow-rose-500/10",
+        "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-xs focus-visible:ring-rose-500 shadow-rose-500/10",
       subtle:
-        "bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/60 focus-visible:ring-blue-400",
+        "bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 focus-visible:ring-slate-400",
     };
 
     const sizeStyles = {

@@ -8,6 +8,10 @@ import {
   SEMESTER_SUBJECTS_DEFAULT,
   SEMESTER_PRIORITIES_DEFAULT,
   SEMESTER_EVENTS_DEFAULT,
+  getSemesterMetric,
+  getSemesterSubjects,
+  getSemesterPriorities,
+  getSemesterEvents,
 } from "./mock-data";
 
 export interface AcademicSettingsState {
@@ -89,6 +93,40 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Sync theme class to document.documentElement
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const root = document.documentElement;
+    const applyTheme = (t: "light" | "dark" | "system") => {
+      if (t === "dark") {
+        root.classList.add("dark");
+      } else if (t === "light") {
+        root.classList.remove("dark");
+      } else {
+        const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (isSystemDark) {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      }
+    };
+    applyTheme(settings.theme);
+
+    if (settings.theme === "system") {
+      const media = window.matchMedia("(prefers-color-scheme: dark)");
+      const handler = (e: MediaQueryListEvent) => {
+        if (e.matches) {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      };
+      media.addEventListener("change", handler);
+      return () => media.removeEventListener("change", handler);
+    }
+  }, [settings.theme]);
+
   const setCurrentSemester = React.useCallback((sem: string) => {
     setCurrentSemesterState(sem);
     setSettings((prev) => {
@@ -152,11 +190,14 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  // Derived semester metrics & data
-  const metrics = SEMESTER_METRICS[currentSemester] || SEMESTER_METRICS["5"];
-  const subjects = SEMESTER_SUBJECTS_DEFAULT[currentSemester] || SEMESTER_SUBJECTS_DEFAULT["5"];
-  const priorities = SEMESTER_PRIORITIES_DEFAULT[currentSemester] || SEMESTER_PRIORITIES_DEFAULT["5"];
-  const upcomingEvents = SEMESTER_EVENTS_DEFAULT[currentSemester] || SEMESTER_EVENTS_DEFAULT["5"];
+  // Derived semester metrics & data for active current semester
+  const metrics =
+    getSemesterMetric(currentSemester, currentSemester) ||
+    SEMESTER_METRICS[currentSemester] ||
+    SEMESTER_METRICS["1"];
+  const subjects = getSemesterSubjects(currentSemester, currentSemester) || [];
+  const priorities = getSemesterPriorities(currentSemester, currentSemester) || [];
+  const upcomingEvents = getSemesterEvents(currentSemester, currentSemester) || [];
 
   return (
     <AcademicContext.Provider

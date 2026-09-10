@@ -11,7 +11,7 @@ interface PriorityFocusListProps {
 
 export function PriorityFocusList({ priorities }: PriorityFocusListProps) {
   return (
-    <Card className="h-full flex flex-col border-amber-200/60 bg-gradient-to-b from-amber-50/20 via-white to-white dark:border-amber-900/40 dark:from-amber-950/10 dark:via-slate-900 dark:to-slate-900">
+    <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -26,7 +26,7 @@ export function PriorityFocusList({ priorities }: PriorityFocusListProps) {
         </div>
         <Link
           href="/priority"
-          className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1"
+          className="text-xs font-semibold text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white flex items-center gap-1"
         >
           Priority Matrix <ArrowUpRight className="h-3.5 w-3.5" />
         </Link>
@@ -42,7 +42,7 @@ export function PriorityFocusList({ priorities }: PriorityFocusListProps) {
               className={`p-4 rounded-xl border transition-all ${
                 isRank1
                   ? "border-rose-200 bg-rose-50/40 dark:border-rose-900/50 dark:bg-rose-950/20"
-                  : "border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900"
+                  : "border-slate-200/80 bg-white dark:border-neutral-800 dark:bg-neutral-900"
               }`}
             >
               <div className="flex items-start justify-between gap-3 mb-2">
@@ -51,16 +51,16 @@ export function PriorityFocusList({ priorities }: PriorityFocusListProps) {
                     className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
                       isRank1
                         ? "bg-rose-600 text-white"
-                        : "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                        : "bg-slate-200 text-slate-800 dark:bg-neutral-800 dark:text-neutral-200"
                     }`}
                   >
                     #{item.rank}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-neutral-100">
                       {item.subjectName}
                     </h4>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                    <span className="text-[11px] text-slate-500 dark:text-neutral-400 font-mono">
                       {item.subjectCode} • {item.impactFactor}
                     </span>
                   </div>
@@ -74,12 +74,12 @@ export function PriorityFocusList({ priorities }: PriorityFocusListProps) {
               </div>
 
               {/* Reason */}
-              <div className="mt-2 text-xs text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-                <p className="font-medium flex items-start gap-1.5 text-slate-700 dark:text-slate-200">
+              <div className="mt-2 text-xs text-slate-600 dark:text-neutral-300 bg-white/80 dark:bg-neutral-900/80 p-2.5 rounded-lg border border-slate-100 dark:border-neutral-800">
+                <p className="font-medium flex items-start gap-1.5 text-slate-700 dark:text-neutral-200">
                   <ShieldAlert className="h-3.5 w-3.5 text-rose-500 mt-0.5 shrink-0" />
                   <span>{item.reason}</span>
                 </p>
-                <p className="mt-1.5 text-slate-500 dark:text-slate-400 pl-5 text-[11px]">
+                <p className="mt-1.5 text-slate-500 dark:text-neutral-400 pl-5 text-[11px]">
                   💡 <strong>Action:</strong> {item.recommendedAction}
                 </p>
               </div>

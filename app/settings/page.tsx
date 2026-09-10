@@ -74,7 +74,7 @@ export default function SettingsPage() {
             <h2 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
               Settings & Preferences
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-slate-500 dark:text-neutral-400">
               Manage your academic profile, grading scale rules, notification alerts, and UI theme.
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
+              <User className="h-5 w-5 text-slate-700 dark:text-neutral-300" />
               <div>
                 <CardTitle>Academic Profile</CardTitle>
                 <CardDescription>Your university identity and degree credentials</CardDescription>
@@ -155,7 +155,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5 text-indigo-600" />
+              <GraduationCap className="h-5 w-5 text-slate-700 dark:text-neutral-300" />
               <div>
                 <CardTitle>Grading Scheme & Calculation Rules</CardTitle>
                 <CardDescription>Configure how SGPA/CGPA and attendance weights are computed</CardDescription>
@@ -212,7 +212,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Palette className="h-5 w-5 text-amber-600" />
+              <Palette className="h-5 w-5 text-slate-700 dark:text-neutral-300" />
               <div>
                 <CardTitle>Appearance & Theme</CardTitle>
                 <CardDescription>Customize the visual presentation of the platform</CardDescription>
@@ -225,8 +225,8 @@ export default function SettingsPage() {
                 onClick={() => setTheme("light")}
                 className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                   theme === "light"
-                    ? "border-blue-600 bg-blue-50/50 dark:bg-slate-800 text-blue-900"
-                    : "border-slate-200 hover:border-slate-300 dark:border-slate-800 text-slate-500"
+                    ? "border-slate-900 bg-slate-100 dark:border-neutral-100 dark:bg-neutral-800 text-slate-900 dark:text-white"
+                    : "border-slate-200 hover:border-slate-300 dark:border-neutral-800 text-slate-500"
                 }`}
               >
                 <span className="text-xs font-semibold">Light Theme</span>
@@ -241,8 +241,8 @@ export default function SettingsPage() {
                 onClick={() => setTheme("dark")}
                 className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                   theme === "dark"
-                    ? "border-blue-600 bg-blue-50/50 dark:bg-slate-800 text-blue-900"
-                    : "border-slate-200 hover:border-slate-300 dark:border-slate-800 text-slate-500"
+                    ? "border-slate-900 bg-slate-100 dark:border-neutral-100 dark:bg-neutral-800 text-slate-900 dark:text-white"
+                    : "border-slate-200 hover:border-slate-300 dark:border-neutral-800 text-slate-500"
                 }`}
               >
                 <span className="text-xs font-semibold">Dark Theme</span>
@@ -257,8 +257,8 @@ export default function SettingsPage() {
                 onClick={() => setTheme("system")}
                 className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                   theme === "system"
-                    ? "border-blue-600 bg-blue-50/50 dark:bg-slate-800 text-blue-900"
-                    : "border-slate-200 hover:border-slate-300 dark:border-slate-800 text-slate-500"
+                    ? "border-slate-900 bg-slate-100 dark:border-neutral-100 dark:bg-neutral-800 text-slate-900 dark:text-white"
+                    : "border-slate-200 hover:border-slate-300 dark:border-neutral-800 text-slate-500"
                 }`}
               >
                 <span className="text-xs font-semibold">System Default</span>
@@ -276,7 +276,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-purple-600" />
+              <Bell className="h-5 w-5 text-slate-700 dark:text-neutral-300" />
               <div>
                 <CardTitle>Alerts & Reminders</CardTitle>
                 <CardDescription>Configure reminder triggers for exams and attendance alerts</CardDescription>
@@ -306,13 +306,13 @@ export default function SettingsPage() {
             ].map((item) => (
               <label
                 key={item.id}
-                className="flex items-start justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-800/30 cursor-pointer select-none"
+                className="flex items-start justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/50 dark:border-neutral-800 dark:bg-neutral-800/30 cursor-pointer select-none"
               >
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                  <h4 className="text-xs font-semibold text-slate-900 dark:text-neutral-100">
                     {item.title}
                   </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
                     {item.desc}
                   </p>
                 </div>
@@ -325,7 +325,7 @@ export default function SettingsPage() {
                       [item.id]: e.target.checked,
                     })
                   }
-                  className="h-4 w-4 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="h-4 w-4 mt-0.5 rounded border-slate-300 accent-slate-900 text-slate-900 focus:ring-slate-900 cursor-pointer"
                 />
               </label>
             ))}

@@ -140,19 +140,19 @@ function AiChatComponent() {
               Context-Aware Prototype
             </Badge>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-neutral-400">
             Guidance formulated from your academic profile, internal marks, and target graduation CGPA.
           </p>
         </div>
 
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 text-xs font-medium">
-          <Sparkles className="h-3.5 w-3.5 text-blue-600 animate-pulse" />
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 text-xs font-medium dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700">
+          <Sparkles className="h-3.5 w-3.5 text-slate-600 dark:text-neutral-400 animate-pulse" />
           <span>Alex Rivera (Sem 5 CSE Context Active)</span>
         </div>
       </div>
 
       {/* Chat Container */}
-      <Card className="flex-1 flex flex-col min-h-0 border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+      <Card className="flex-1 flex flex-col min-h-0 border-slate-200/90 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
         {/* Messages Scroll Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {messages.map((msg) => {
@@ -168,8 +168,8 @@ function AiChatComponent() {
                 <div
                   className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
                     isAssistant
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900"
+                      ? "bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-xs"
+                      : "bg-slate-800 text-white dark:bg-neutral-200 dark:text-neutral-900"
                   }`}
                 >
                   {isAssistant ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
@@ -179,8 +179,8 @@ function AiChatComponent() {
                   <div
                     className={`p-4 rounded-2xl text-sm leading-relaxed ${
                       isAssistant
-                        ? "bg-slate-50 border border-slate-200/80 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
-                        : "bg-blue-600 text-white shadow-xs"
+                        ? "bg-slate-50 border border-slate-200/80 text-slate-900 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
+                        : "bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-xs"
                     }`}
                   >
                     <p className="whitespace-pre-line">{msg.content}</p>
@@ -194,7 +194,7 @@ function AiChatComponent() {
                           key={idx}
                           type="button"
                           onClick={() => handleSendMessage(s)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 border border-slate-200/60 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer"
                         >
                           <Lightbulb className="h-3 w-3 text-amber-500" />
                           <span>{s}</span>
@@ -213,10 +213,10 @@ function AiChatComponent() {
 
           {isTyping && (
             <div className="flex gap-3 max-w-2xl mr-auto animate-pulse">
-              <div className="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900 flex items-center justify-center">
                 <Bot className="h-4 w-4" />
               </div>
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400">
                 AcaVise is formulating guidance...
               </div>
             </div>
@@ -226,14 +226,14 @@ function AiChatComponent() {
         </div>
 
         {/* Chat Input Bar */}
-        <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900">
+        <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <input
               type="text"
               placeholder="Ask about your study priorities, target marks, or exam strategies..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="flex-1 h-10 px-4 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="flex-1 h-10 px-4 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             />
             <Button type="submit" size="md" className="gap-1.5 shrink-0 px-4">
               <span>Send</span>

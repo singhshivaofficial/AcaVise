@@ -109,12 +109,12 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
   return (
     <div
       ref={popoverRef}
-      className="absolute right-0 top-12 z-50 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900 overflow-hidden animate-in zoom-in-95 duration-150"
+      className="absolute right-0 top-12 z-50 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200 dark:border-neutral-800 dark:bg-neutral-900 overflow-hidden animate-in zoom-in-95 duration-150"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-neutral-800">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-neutral-100">
             Notifications
           </h3>
           {unreadCount > 0 && (
@@ -128,7 +128,7 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="text-[11px] font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1"
+              className="text-[11px] font-medium text-slate-700 hover:text-slate-950 dark:text-neutral-300 dark:hover:text-white px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-1"
               title="Mark all as read"
             >
               <CheckCheck className="h-3 w-3" /> Mark all read
@@ -136,7 +136,7 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
           )}
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md"
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 rounded-md"
           >
             <X className="h-4 w-4" />
           </button>
@@ -144,10 +144,10 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
       </div>
 
       {/* Notification Items */}
-      <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+      <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-neutral-800">
         {notifications.length === 0 ? (
           <div className="py-10 text-center text-xs text-slate-400 space-y-1">
-            <Bell className="h-6 w-6 mx-auto text-slate-300 dark:text-slate-600" />
+            <Bell className="h-6 w-6 mx-auto text-slate-300 dark:text-neutral-600" />
             <p>No notifications right now.</p>
           </div>
         ) : (
@@ -159,9 +159,9 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
                 markAsRead(n.id);
                 onClose();
               }}
-              className={`block p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors ${
+              className={`block p-3.5 hover:bg-slate-50 dark:hover:bg-neutral-800/60 transition-colors ${
                 !n.read
-                  ? "bg-blue-50/40 dark:bg-blue-950/20"
+                  ? "bg-slate-50/70 dark:bg-neutral-800/40"
                   : ""
               }`}
             >
@@ -172,7 +172,7 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
                       ? "bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-400"
                       : n.type === "priority"
                       ? "bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400"
-                      : "bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
+                      : "bg-slate-100 text-slate-700 dark:bg-neutral-800 dark:text-neutral-300"
                   }`}
                 >
                   {n.type === "exam" ? (
@@ -189,17 +189,17 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
                     <h4
                       className={`text-xs font-semibold truncate ${
                         !n.read
-                          ? "text-slate-900 dark:text-slate-100"
-                          : "text-slate-600 dark:text-slate-400"
+                          ? "text-slate-900 dark:text-neutral-100"
+                          : "text-slate-600 dark:text-neutral-400"
                       }`}
                     >
                       {n.title}
                     </h4>
                     {!n.read && (
-                      <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0" />
+                      <span className="h-2 w-2 rounded-full bg-slate-900 dark:bg-neutral-100 shrink-0" />
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-slate-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
                     {n.message}
                   </p>
                   <span className="text-[10px] text-slate-400 block pt-0.5 font-medium">
@@ -214,7 +214,7 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
 
       {/* Footer */}
       {notifications.length > 0 && (
-        <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+        <div className="p-2.5 bg-slate-50 dark:bg-neutral-800/50 border-t border-slate-100 dark:border-neutral-800 flex items-center justify-between text-xs">
           <button
             onClick={clearAll}
             className="text-[11px] text-slate-400 hover:text-rose-600 flex items-center gap-1 transition-colors"
@@ -224,7 +224,7 @@ export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProp
           <Link
             href="/dashboard"
             onClick={onClose}
-            className="text-[11px] font-semibold text-blue-600 hover:underline"
+            className="text-[11px] font-semibold text-slate-700 hover:text-slate-950 dark:text-neutral-300 dark:hover:text-white"
           >
             View Dashboard
           </Link>

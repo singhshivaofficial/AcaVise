@@ -66,7 +66,7 @@ export function Dialog({
       {/* Modal Dialog Card */}
       <div
         className={cn(
-          "relative w-full rounded-xl bg-white p-6 text-left shadow-2xl transition-all dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-10 animate-in zoom-in-95",
+          "relative w-full rounded-xl bg-white p-6 text-left shadow-2xl transition-all dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 z-10 animate-in zoom-in-95",
           maxWidthClasses[maxWidth],
           className
         )}
@@ -75,16 +75,16 @@ export function Dialog({
           onClick={onClose}
           type="button"
           aria-label="Close dialog"
-          className="absolute right-4 top-4 rounded-md p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="absolute right-4 top-4 rounded-md p-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-neutral-100"
         >
           <X className="h-5 w-5" />
         </button>
 
         {title && (
           <div className="mb-4 pr-6">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">{title}</h2>
             {description && (
-              <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">{description}</p>
+              <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-neutral-400">{description}</p>
             )}
           </div>
         )}

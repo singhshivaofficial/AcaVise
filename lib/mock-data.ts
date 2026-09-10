@@ -378,71 +378,92 @@ export const SEMESTER_SUBJECTS_DEFAULT: Record<string, Subject[]> = {
       ],
     },
   ],
-  "6": [
-    {
-      id: "sub_601",
-      code: "CS601",
-      name: "Compiler Design",
-      credits: 4,
-      faculty: "Prof. H. Trivedi",
-      currentScore: 78,
-      targetGrade: "A+",
-      attendance: 90.0,
-      trend: "stable",
-      trendValue: "Stable",
-      status: "Good Standing",
-      assessments: [],
-    },
-    {
-      id: "sub_602",
-      code: "CS602",
-      name: "Computer Networks",
-      credits: 4,
-      faculty: "Dr. B. Sengupta",
-      currentScore: 84,
-      targetGrade: "O",
-      attendance: 91.0,
-      trend: "up",
-      trendValue: "+3%",
-      status: "Good Standing",
-      assessments: [],
-    },
-  ],
-  "7": [
-    {
-      id: "sub_701",
-      code: "CS701",
-      name: "Cloud Computing & DevOps",
-      credits: 4,
-      faculty: "Dr. K. Nambiar",
-      currentScore: 86,
-      targetGrade: "O",
-      attendance: 92.5,
-      trend: "up",
-      trendValue: "+4%",
-      status: "Good Standing",
-      assessments: [],
-    },
-  ],
-  "8": [
-    {
-      id: "sub_801",
-      code: "CS801",
-      name: "Major Project & Internship",
-      credits: 12,
-      faculty: "Department Review Board",
-      currentScore: 90,
-      targetGrade: "O",
-      attendance: 95.0,
-      trend: "stable",
-      trendValue: "On Schedule",
-      status: "Good Standing",
-      assessments: [],
-    },
-  ],
+  "6": [],
+  "7": [],
+  "8": [],
 };
 
 export const MOCK_SUBJECTS: Subject[] = SEMESTER_SUBJECTS_DEFAULT["5"];
+
+export function getSemesterSubjects(
+  viewedSemester: string | number,
+  currentSemester: string | number,
+  customStore?: Record<string, Subject[]>
+): Subject[] {
+  const viewedNum = parseInt(String(viewedSemester), 10) || 1;
+  const currentNum = parseInt(String(currentSemester), 10) || 5;
+
+  // Future semester: strictly empty unless user explicitly added custom pre-registered subjects
+  if (viewedNum > currentNum) {
+    if (customStore && customStore[String(viewedSemester)]) {
+      return customStore[String(viewedSemester)].filter(
+        (s) => s.id.startsWith("sub_custom_") || s.status === "Pre-registered"
+      );
+    }
+    return [];
+  }
+
+  // Current or Past semester
+  if (customStore && customStore[String(viewedSemester)] && customStore[String(viewedSemester)].length > 0) {
+    return customStore[String(viewedSemester)];
+  }
+
+  return SEMESTER_SUBJECTS_DEFAULT[String(viewedSemester)] || [];
+}
+
+/**
+ * Helper to get metrics for a viewed semester relative to current semester.
+ * Future semesters (viewedSemester > currentSemester) return null.
+ */
+export function getSemesterMetric(
+  viewedSemester: string | number,
+  currentSemester: string | number
+): AcademicMetric | null {
+  const viewedNum = parseInt(String(viewedSemester), 10) || 1;
+  const currentNum = parseInt(String(currentSemester), 10) || 5;
+
+  if (viewedNum > currentNum) {
+    return null;
+  }
+
+  return SEMESTER_METRICS[String(viewedSemester)] || null;
+}
+
+/**
+ * Helper to get study priorities for a viewed semester relative to current semester.
+ * Future semesters return [].
+ */
+export function getSemesterPriorities(
+  viewedSemester: string | number,
+  currentSemester: string | number
+): StudyPriorityItem[] {
+  const viewedNum = parseInt(String(viewedSemester), 10) || 1;
+  const currentNum = parseInt(String(currentSemester), 10) || 5;
+
+  if (viewedNum > currentNum) {
+    return [];
+  }
+
+  return SEMESTER_PRIORITIES_DEFAULT[String(viewedSemester)] || [];
+}
+
+/**
+ * Helper to get upcoming events for a viewed semester relative to current semester.
+ * Future semesters return [].
+ */
+export function getSemesterEvents(
+  viewedSemester: string | number,
+  currentSemester: string | number
+): UpcomingEvent[] {
+  const viewedNum = parseInt(String(viewedSemester), 10) || 1;
+  const currentNum = parseInt(String(currentSemester), 10) || 5;
+
+  if (viewedNum > currentNum) {
+    return [];
+  }
+
+  return SEMESTER_EVENTS_DEFAULT[String(viewedSemester)] || [];
+}
 
 // -------------------------------------------------------------
 // Per-Semester Priorities
@@ -554,48 +575,9 @@ export const SEMESTER_PRIORITIES_DEFAULT: Record<string, StudyPriorityItem[]> = 
       creditWeight: 4,
     },
   ],
-  "6": [
-    {
-      id: "pri_601",
-      rank: 1,
-      subjectCode: "CS601",
-      subjectName: "Compiler Design",
-      priorityScore: 80,
-      urgency: "High",
-      impactFactor: "High (4 Credits)",
-      reason: "LR(1) and LALR parser table construction requires systematic step-by-step revision.",
-      recommendedAction: "Practice shift-reduce conflict resolution on sample grammars.",
-      creditWeight: 4,
-    },
-  ],
-  "7": [
-    {
-      id: "pri_701",
-      rank: 1,
-      subjectCode: "CS701",
-      subjectName: "Cloud Computing & DevOps",
-      priorityScore: 75,
-      urgency: "Medium",
-      impactFactor: "High (4 Credits)",
-      reason: "Kubernetes pod orchestration & Docker containerization case studies.",
-      recommendedAction: "Deploy sample multi-tier microservice architecture locally.",
-      creditWeight: 4,
-    },
-  ],
-  "8": [
-    {
-      id: "pri_801",
-      rank: 1,
-      subjectCode: "CS801",
-      subjectName: "Major Project & Internship",
-      priorityScore: 90,
-      urgency: "High",
-      impactFactor: "High (12 Credits)",
-      reason: "Capstone technical report and demonstration to internal evaluation committee.",
-      recommendedAction: "Prepare slide deck and benchmark latency/throughput measurements.",
-      creditWeight: 12,
-    },
-  ],
+  "6": [],
+  "7": [],
+  "8": [],
 };
 
 export const MOCK_PRIORITY_ITEMS: StudyPriorityItem[] = SEMESTER_PRIORITIES_DEFAULT["5"];
@@ -695,39 +677,9 @@ export const SEMESTER_EVENTS_DEFAULT: Record<string, UpcomingEvent[]> = {
       priority: "Low",
     },
   ],
-  "6": [
-    {
-      id: "evt_601",
-      title: "Lexical Analyzer Assignment",
-      subject: "Compiler Design (CS601)",
-      date: "In 3 days",
-      daysLeft: 3,
-      type: "Assignment",
-      priority: "High",
-    },
-  ],
-  "7": [
-    {
-      id: "evt_701",
-      title: "DevOps Pipeline Demo",
-      subject: "Cloud Computing (CS701)",
-      date: "In 5 days",
-      daysLeft: 5,
-      type: "Assignment",
-      priority: "Medium",
-    },
-  ],
-  "8": [
-    {
-      id: "evt_801",
-      title: "Final Capstone Evaluation",
-      subject: "Major Project (CS801)",
-      date: "Next Week",
-      daysLeft: 7,
-      type: "Exam",
-      priority: "High",
-    },
-  ],
+  "6": [],
+  "7": [],
+  "8": [],
 };
 
 export const MOCK_UPCOMING_EVENTS: UpcomingEvent[] = SEMESTER_EVENTS_DEFAULT["5"];

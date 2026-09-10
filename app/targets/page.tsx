@@ -72,7 +72,7 @@ export default function TargetsPage() {
                 Live Simulator
               </Badge>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-slate-500 dark:text-neutral-400">
               Calculate the exact SGPA and end-semester exam marks required to reach your target graduation CGPA.
             </p>
           </div>
@@ -86,25 +86,25 @@ export default function TargetsPage() {
         {/* Target Simulator Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1: Target CGPA Input */}
-          <Card className="border-blue-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+          <Card className="shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <CardTitle className="text-sm font-semibold text-slate-700 dark:text-neutral-300">
                   Target Graduation CGPA
                 </CardTitle>
-                <Target className="h-4 w-4 text-blue-600" />
+                <Target className="h-4 w-4 text-slate-700 dark:text-neutral-300" />
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-blue-600">{targetCgpaNum.toFixed(2)}</span>
+                <span className="text-3xl font-extrabold text-slate-900 dark:text-neutral-100">{targetCgpaNum.toFixed(2)}</span>
                 <span className="text-xs text-slate-400 font-medium">/ 10.0 Scale</span>
               </div>
               <p className="text-xs text-slate-500">
                 Current: <strong>{currentCgpa}</strong> across {completedCredits} completed credits
               </p>
               <div className="space-y-1.5 pt-1">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300">
                   Adjust Target CGPA:
                 </label>
                 <div className="flex items-center gap-2">
@@ -126,18 +126,18 @@ export default function TargetsPage() {
           </Card>
 
           {/* Card 2: Required SGPA Output */}
-          <Card className="border-indigo-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+          <Card className="shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <CardTitle className="text-sm font-semibold text-slate-700 dark:text-neutral-300">
                   Required Semester SGPA
                 </CardTitle>
-                <Calculator className="h-4 w-4 text-indigo-600" />
+                <Calculator className="h-4 w-4 text-slate-700 dark:text-neutral-300" />
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-baseline gap-2">
-                <span className={`text-3xl font-extrabold ${rawRequiredSgpa > 10 ? "text-rose-600" : "text-indigo-600"}`}>
+                <span className={`text-3xl font-extrabold ${rawRequiredSgpa > 10 ? "text-rose-600" : "text-slate-900 dark:text-neutral-100"}`}>
                   {displayRequiredSgpa}
                 </span>
                 <span className="text-xs text-slate-400 font-medium">in Sem 5 & 6</span>
@@ -154,25 +154,25 @@ export default function TargetsPage() {
           </Card>
 
           {/* Card 3: Endterm Average */}
-          <Card className="border-emerald-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+          <Card className="shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <CardTitle className="text-sm font-semibold text-slate-700 dark:text-neutral-300">
                   Endterm Target Average
                 </CardTitle>
-                <Sparkles className="h-4 w-4 text-emerald-600" />
+                <Sparkles className="h-4 w-4 text-slate-700 dark:text-neutral-300" />
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-emerald-600">{requiredExamAvg}%</span>
+                <span className="text-3xl font-extrabold text-slate-900 dark:text-neutral-100">{requiredExamAvg}%</span>
                 <span className="text-xs text-slate-400 font-medium">Exam Average Needed</span>
               </div>
               <p className="text-xs text-slate-500">
                 Projected against your continuous internal evaluation average (76.8%)
               </p>
               <div className="pt-1">
-                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-900 block text-center">
+                <span className="text-xs font-semibold text-slate-700 dark:text-neutral-300 bg-slate-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md border border-slate-200 dark:border-neutral-700 block text-center">
                   {rawRequiredSgpa <= 9.0 ? "Target is well within reach" : "Prioritize 4-Credit Core Subjects"}
                 </span>
               </div>
@@ -192,7 +192,7 @@ export default function TargetsPage() {
             <div className="overflow-x-auto -mx-5 px-5">
               <table className="w-full text-left border-collapse min-w-[650px]">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500">
+                  <tr className="border-b border-slate-200 dark:border-neutral-800 text-xs font-semibold text-slate-500">
                     <th className="py-3 px-3">Subject</th>
                     <th className="py-3 px-3">Credits</th>
                     <th className="py-3 px-3">Internal Score</th>
@@ -201,7 +201,7 @@ export default function TargetsPage() {
                     <th className="py-3 px-3 text-right">Feasibility</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
+                <tbody className="divide-y divide-slate-100 dark:divide-neutral-800/60 text-sm">
                   {subjects.map((sub, i) => {
                     // Dynamic mark offset based on target SGPA
                     const delta = (rawRequiredSgpa - 8.5) * 6;
@@ -215,13 +215,13 @@ export default function TargetsPage() {
                         : "Comfortable";
 
                     return (
-                      <tr key={sub.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
+                      <tr key={sub.id} className="hover:bg-slate-50/70 dark:hover:bg-neutral-800/40">
                         <td className="py-3.5 px-3">
-                          <span className="font-semibold text-slate-900 dark:text-slate-100">{sub.name}</span>
+                          <span className="font-semibold text-slate-900 dark:text-neutral-100">{sub.name}</span>
                           <div className="text-xs text-slate-400 font-mono">{sub.code}</div>
                         </td>
                         <td className="py-3.5 px-3 font-semibold">{sub.credits}</td>
-                        <td className="py-3.5 px-3 font-semibold text-slate-700 dark:text-slate-300">
+                        <td className="py-3.5 px-3 font-semibold text-slate-700 dark:text-neutral-300">
                           {sub.currentScore}%
                         </td>
                         <td className="py-3.5 px-3">
@@ -230,7 +230,7 @@ export default function TargetsPage() {
                           </Badge>
                         </td>
                         <td className="py-3.5 px-3">
-                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                          <span className="font-bold text-slate-900 dark:text-neutral-100">
                             {computedMarks} / 100
                           </span>
                           <span className="text-xs text-slate-400 ml-1.5">(≥ {computedMarks}%)</span>
@@ -253,16 +253,16 @@ export default function TargetsPage() {
         </Card>
 
         {/* Engine Explanation Box */}
-        <Card className="bg-slate-50 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
-          <CardContent className="p-5 space-y-2 text-xs text-slate-600 dark:text-slate-400">
-            <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-200 text-sm">
-              <HelpCircle className="h-4 w-4 text-blue-600" />
+        <Card className="bg-slate-50 border-slate-200 dark:bg-neutral-900/60 dark:border-neutral-800">
+          <CardContent className="p-5 space-y-2 text-xs text-slate-600 dark:text-neutral-400">
+            <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-neutral-200 text-sm">
+              <HelpCircle className="h-4 w-4 text-slate-600 dark:text-neutral-400" />
               <span>Calculation Engine Formula</span>
             </div>
             <p className="leading-relaxed">
               In <strong>Step 5 & Step 6</strong>, this engine will connect to your real university grading scale:
             </p>
-            <p className="font-mono bg-white dark:bg-slate-800 p-2.5 rounded-md border border-slate-200 dark:border-slate-700 text-blue-700 dark:text-blue-300">
+            <p className="font-mono bg-white dark:bg-neutral-800 p-2.5 rounded-md border border-slate-200 dark:border-neutral-700 text-slate-900 dark:text-neutral-100">
               Required SGPA = [ (Target CGPA × Total Degree Credits) - (Current CGPA × Completed Credits) ] / Remaining Credits
             </p>
             <p className="leading-relaxed">

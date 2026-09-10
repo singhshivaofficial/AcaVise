@@ -18,8 +18,8 @@ export default function DashboardPage() {
     <AppShell>
       <div className="space-y-6">
         {/* Top Notification Banner for Mock Data clarity */}
-        <div className="flex items-center gap-2.5 rounded-lg border border-blue-200 bg-blue-50/80 px-4 py-2.5 text-xs text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200">
-          <Info className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+        <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-xs text-slate-700 dark:border-neutral-800 dark:bg-neutral-900/40 dark:text-neutral-300">
+          <Info className="h-4 w-4 shrink-0 text-slate-600 dark:text-neutral-400" />
           <span>
             <strong>UI Architecture Preview:</strong> Displaying synchronized prototype context for{" "}
             <strong>{profile.name}</strong> (Semester {currentSemester}, {profile.branch}).
@@ -32,13 +32,13 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
               Good evening, {profile.name.split(" ")[0]} 👋
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-slate-500 dark:text-neutral-400">
               Here&apos;s your academic overview and study priority analysis for Semester {currentSemester}.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white dark:bg-slate-900 dark:text-slate-300 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white dark:bg-neutral-900 dark:text-neutral-300 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-neutral-800 shadow-2xs">
             <span>Target CGPA:</span>
-            <span className="text-blue-600 dark:text-blue-400 font-bold">{targetCgpa.toFixed(2)}</span>
+            <span className="text-slate-900 dark:text-neutral-100 font-bold">{targetCgpa.toFixed(2)}</span>
           </div>
         </div>
 

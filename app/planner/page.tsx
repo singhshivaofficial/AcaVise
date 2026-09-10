@@ -14,19 +14,21 @@ import { MOCK_STUDY_PLAN } from "@/lib/mock-data";
 import { StudyPlanDay, StudyPlanTask } from "@/types";
 
 export default function PlannerPage() {
-  const [planDays, setPlanDays] = React.useState<StudyPlanDay[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("acavise_study_plan");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          // fallback
-        }
+  const [planDays, setPlanDays] = React.useState<StudyPlanDay[]>(MOCK_STUDY_PLAN);
+  const [isClientLoaded, setIsClientLoaded] = React.useState(false);
+
+  // Load from localStorage on client mount only
+  React.useEffect(() => {
+    const saved = localStorage.getItem("acavise_study_plan");
+    if (saved) {
+      try {
+        setPlanDays(JSON.parse(saved));
+      } catch {
+        // fallback
       }
     }
-    return MOCK_STUDY_PLAN;
-  });
+    setIsClientLoaded(true);
+  }, []);
 
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
 
@@ -43,10 +45,10 @@ export default function PlannerPage() {
 
   // Persist to localStorage
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (isClientLoaded) {
       localStorage.setItem("acavise_study_plan", JSON.stringify(planDays));
     }
-  }, [planDays]);
+  }, [planDays, isClientLoaded]);
 
   const toggleTask = (dayIndex: number, taskId: string) => {
     setPlanDays((prev) =>
@@ -127,7 +129,7 @@ export default function PlannerPage() {
                 Interactive Schedule
               </Badge>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-slate-500 dark:text-neutral-400">
               Turn your priority subjects and upcoming exams into a realistic daily revision schedule.
             </p>
           </div>
@@ -141,15 +143,15 @@ export default function PlannerPage() {
 
         {/* Progress & Focus Summary */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="p-4 bg-white dark:bg-slate-900 sm:col-span-2 shadow-xs">
+          <Card className="p-4 bg-white dark:bg-neutral-900 sm:col-span-2 shadow-xs">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Flame className="h-5 w-5 text-amber-500" />
-                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                <span className="text-sm font-bold text-slate-900 dark:text-neutral-100">
                   Weekly Goal Progress
                 </span>
               </div>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <span className="text-xs font-bold text-slate-700 dark:text-neutral-300">
                 {completedTasks} of {totalTasks} blocks completed ({completionPercentage.toFixed(0)}%)
               </span>
             </div>
@@ -159,16 +161,16 @@ export default function PlannerPage() {
             </p>
           </Card>
 
-          <Card className="p-4 bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-900 shadow-xs">
+          <Card className="p-4 bg-white dark:bg-neutral-900 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+              <div className="h-10 w-10 rounded-lg bg-slate-100 text-slate-700 dark:bg-neutral-800 dark:text-neutral-300 flex items-center justify-center">
                 <Clock className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-blue-900 dark:text-blue-200 font-semibold">
+                <p className="text-xs text-slate-500 dark:text-neutral-400 font-semibold">
                   Total Planned Schedule
                 </p>
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                <p className="text-sm font-bold text-slate-900 dark:text-neutral-100">
                   {totalPlannedHours.toFixed(1)} Hours • {totalTasks} Sessions
                 </p>
               </div>
@@ -183,11 +185,11 @@ export default function PlannerPage() {
               key={day.day}
               className={`flex flex-col ${
                 day.isToday
-                  ? "border-blue-400 ring-1 ring-blue-400 bg-white dark:bg-slate-900 shadow-sm"
-                  : "bg-white dark:bg-slate-900"
+                  ? "border-slate-900 ring-1 ring-slate-900 dark:border-neutral-100 dark:ring-neutral-100 bg-white dark:bg-neutral-900 shadow-sm"
+                  : "bg-white dark:bg-neutral-900"
               }`}
             >
-              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="pb-3 border-b border-slate-100 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-base">{day.day}</CardTitle>
@@ -216,7 +218,7 @@ export default function PlannerPage() {
                       className={`p-3 rounded-xl border transition-all cursor-pointer select-none ${
                         task.completed
                           ? "bg-emerald-50/40 border-emerald-200 text-slate-400 dark:bg-emerald-950/10 dark:border-emerald-900"
-                          : "bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/70 dark:bg-slate-800/40 dark:border-slate-700/80"
+                          : "bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/70 dark:bg-neutral-800/40 dark:border-neutral-700/80"
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
@@ -224,7 +226,7 @@ export default function PlannerPage() {
                           className={`mt-0.5 h-4 w-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
                             task.completed
                               ? "bg-emerald-600 border-emerald-600 text-white"
-                              : "border-slate-400 bg-white dark:bg-slate-800"
+                              : "border-slate-400 bg-white dark:bg-neutral-800"
                           }`}
                         >
                           {task.completed && <CheckCircle2 className="h-3.5 w-3.5" />}
@@ -236,7 +238,7 @@ export default function PlannerPage() {
                               className={`text-xs font-bold ${
                                 task.completed
                                   ? "line-through text-slate-400"
-                                  : "text-slate-800 dark:text-slate-200"
+                                  : "text-slate-800 dark:text-neutral-200"
                               }`}
                             >
                               {task.subject}
@@ -258,7 +260,7 @@ export default function PlannerPage() {
                             className={`mt-1 text-xs leading-snug ${
                               task.completed
                                 ? "line-through text-slate-400"
-                                : "text-slate-600 dark:text-slate-400"
+                                : "text-slate-600 dark:text-neutral-400"
                             }`}
                           >
                             {task.title}
@@ -359,7 +361,7 @@ export default function PlannerPage() {
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-neutral-800">
               <Button
                 type="button"
                 variant="outline"

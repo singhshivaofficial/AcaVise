@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className="h-full antialiased selection:bg-blue-600 selection:text-white">
+      <body className="h-full antialiased selection:bg-slate-900 selection:text-white dark:selection:bg-neutral-100 dark:selection:text-neutral-900">
         <AcademicProvider>
           {children}
         </AcademicProvider>

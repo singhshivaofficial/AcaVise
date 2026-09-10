@@ -13,7 +13,7 @@ export function AppShell({ children }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   return (
-    <div className="flex min-h-screen bg-slate-50/70 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <div className="flex min-h-screen bg-slate-50/70 text-slate-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
       {/* Desktop Sidebar (hidden on mobile) */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-40">
         <Sidebar className="h-full w-full" />

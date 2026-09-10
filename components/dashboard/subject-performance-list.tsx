@@ -20,7 +20,7 @@ export function SubjectPerformanceList({ subjects }: SubjectPerformanceListProps
         </div>
         <Link
           href="/academics"
-          className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1"
+          className="text-xs font-semibold text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white flex items-center gap-1"
         >
           Details <ArrowUpRight className="h-3.5 w-3.5" />
         </Link>
@@ -38,19 +38,19 @@ export function SubjectPerformanceList({ subjects }: SubjectPerformanceListProps
           return (
             <div
               key={subject.id}
-              className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors dark:border-slate-800/80 dark:bg-slate-800/30 dark:hover:bg-slate-800/60"
+              className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors dark:border-neutral-800/80 dark:bg-neutral-800/30 dark:hover:bg-neutral-800/60"
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 font-mono">
+                    <span className="text-xs font-bold text-slate-500 dark:text-neutral-400 font-mono">
                       {subject.code}
                     </span>
-                    <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-neutral-100 truncate">
                       {subject.name}
                     </h4>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] text-slate-500 dark:text-neutral-400">
                     {subject.faculty} • {subject.credits} Credits
                   </p>
                 </div>
@@ -68,7 +68,7 @@ export function SubjectPerformanceList({ subjects }: SubjectPerformanceListProps
                   >
                     {subject.status}
                   </Badge>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <span className="text-xs font-bold text-slate-800 dark:text-neutral-200">
                     {subject.currentScore}%
                   </span>
                 </div>
@@ -77,7 +77,7 @@ export function SubjectPerformanceList({ subjects }: SubjectPerformanceListProps
               {/* Progress & Trend */}
               <div className="space-y-1.5">
                 <Progress value={subject.currentScore} variant={progressVariant} size="sm" />
-                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-neutral-400">
                   <span className="flex items-center gap-1">
                     {subject.trend === "up" && (
                       <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
@@ -90,7 +90,7 @@ export function SubjectPerformanceList({ subjects }: SubjectPerformanceListProps
                       </span>
                     )}
                     {subject.trend === "stable" && (
-                      <span className="text-slate-500 dark:text-slate-400 flex items-center gap-0.5">
+                      <span className="text-slate-500 dark:text-neutral-400 flex items-center gap-0.5">
                         <Minus className="h-3 w-3" /> Stable
                       </span>
                     )}

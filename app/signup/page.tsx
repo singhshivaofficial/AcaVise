@@ -42,28 +42,28 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-12 dark:bg-neutral-950">
       <div className="w-full max-w-lg space-y-6">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center space-y-2">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white font-bold dark:bg-neutral-100 dark:text-neutral-900 shadow-xs">
               <BookOpenCheck className="h-6 w-6" />
             </div>
             <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
               AcaVise
             </span>
           </Link>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
             Create your Student Account
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
+          <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-sm">
             Set up your academic profile to unlock target tracking, priority scoring, and AI assistance.
           </p>
         </div>
 
         {/* Signup Card Form */}
-        <Card className="shadow-sm border-slate-200/90 dark:border-slate-800">
+        <Card className="shadow-sm border-slate-200/90 dark:border-neutral-800">
           <CardHeader className="pb-4">
             <CardTitle className="text-base">Student Registration</CardTitle>
             <CardDescription>Academic profile & credentials</CardDescription>
@@ -142,8 +142,8 @@ export default function SignupPage() {
                 />
               </div>
 
-              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/40 p-3 text-xs text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-blue-900">
-                <span className="font-semibold">Step 1 UI Demo:</span> User registration is simulated locally. Supabase Auth will be wired in Step 2.
+              <div className="rounded-lg bg-slate-100 dark:bg-neutral-800/60 p-3 text-xs text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-neutral-700">
+                <span className="font-semibold text-slate-900 dark:text-neutral-100">Step 1 UI Demo:</span> User registration is simulated locally. Supabase Auth will be wired in Step 2.
               </div>
 
               <Button type="submit" isLoading={isLoading} className="w-full gap-2">
@@ -151,9 +151,9 @@ export default function SignupPage() {
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="justify-center border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-500">
+          <CardFooter className="justify-center border-t border-slate-100 dark:border-neutral-800 pt-4 text-xs text-slate-500">
             Already have an account?{" "}
-            <Link href="/login" className="ml-1 font-semibold text-blue-600 hover:underline">
+            <Link href="/login" className="ml-1 font-semibold text-slate-900 hover:underline dark:text-neutral-100">
               Sign In
             </Link>
           </CardFooter>

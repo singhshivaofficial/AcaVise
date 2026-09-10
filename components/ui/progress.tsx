@@ -18,7 +18,9 @@ export function Progress({
   showLabel = false,
   ...props
 }: ProgressProps) {
-  const percentage = Math.min(100, Math.max(0, (value / max) * 100));
+  const safeVal = isNaN(value) ? 0 : value;
+  const safeMax = isNaN(max) || max <= 0 ? 100 : max;
+  const percentage = Math.min(100, Math.max(0, (safeVal / safeMax) * 100));
 
   const sizeClasses = {
     sm: "h-1.5",
@@ -27,7 +29,7 @@ export function Progress({
   };
 
   const variantBarClasses = {
-    default: "bg-blue-600 dark:bg-blue-500",
+    default: "bg-slate-900 dark:bg-neutral-100",
     success: "bg-emerald-500 dark:bg-emerald-400",
     warning: "bg-amber-500 dark:bg-amber-400",
     danger: "bg-rose-500 dark:bg-rose-400",
@@ -41,7 +43,7 @@ export function Progress({
         aria-valuemin={0}
         aria-valuemax={max}
         className={cn(
-          "w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800",
+          "w-full overflow-hidden rounded-full bg-slate-100 dark:bg-neutral-800",
           sizeClasses[size],
           className
         )}
@@ -53,7 +55,7 @@ export function Progress({
         />
       </div>
       {showLabel && (
-        <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+        <div className="flex justify-between text-[11px] text-slate-500 dark:text-neutral-400 font-medium">
           <span>{percentage.toFixed(0)}%</span>
           <span>{max}%</span>
         </div>

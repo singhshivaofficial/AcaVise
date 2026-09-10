@@ -188,9 +188,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       />
 
       {/* Modal Box */}
-      <div className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900 z-10 overflow-hidden animate-in zoom-in-95">
+      <div className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl border border-slate-200 dark:border-neutral-800 dark:bg-neutral-900 z-10 overflow-hidden animate-in zoom-in-95">
         {/* Search Header Input */}
-        <div className="flex items-center px-4 border-b border-slate-200/80 dark:border-slate-800">
+        <div className="flex items-center px-4 border-b border-slate-200/80 dark:border-neutral-800">
           <Search className="h-5 w-5 text-slate-400 shrink-0" />
           <input
             ref={inputRef}
@@ -201,12 +201,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            className="w-full h-14 px-3 bg-transparent text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100"
+            className="w-full h-14 px-3 bg-transparent text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-neutral-100"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md"
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 rounded-md"
             >
               <X className="h-4 w-4" />
             </button>
@@ -231,16 +231,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-colors ${
                     isSelected
-                      ? "bg-blue-50 text-blue-900 dark:bg-blue-950/50 dark:text-blue-200"
-                      : "hover:bg-slate-50 text-slate-700 dark:hover:bg-slate-800/60 dark:text-slate-300"
+                      ? "bg-slate-100 text-slate-900 dark:bg-neutral-800 dark:text-neutral-100"
+                      : "hover:bg-slate-50 text-slate-700 dark:hover:bg-neutral-800/60 dark:text-neutral-300"
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
                         isSelected
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                          ? "bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                          : "bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400"
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -248,11 +248,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold truncate">{item.title}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 font-medium">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 dark:bg-neutral-800 dark:text-neutral-400 font-medium">
                           {item.category}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      <p className="text-xs text-slate-500 dark:text-neutral-400 truncate">
                         {item.description}
                       </p>
                     </div>
@@ -260,7 +260,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
                   <ArrowRight
                     className={`h-4 w-4 shrink-0 transition-transform ${
-                      isSelected ? "text-blue-600 translate-x-0.5" : "text-slate-300 dark:text-slate-600"
+                      isSelected ? "text-slate-900 dark:text-neutral-100 translate-x-0.5" : "text-slate-300 dark:text-neutral-600"
                     }`}
                   />
                 </div>
@@ -270,17 +270,17 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Footer shortcuts */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-neutral-800/60 border-t border-slate-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-slate-400">
           <div className="flex items-center gap-3">
             <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono">↑↓</kbd> to navigate
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 font-mono">↑↓</kbd> to navigate
             </span>
             <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono">Enter</kbd> to select
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 font-mono">Enter</kbd> to select
             </span>
           </div>
           <span>
-            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono">ESC</kbd> to close
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 font-mono">ESC</kbd> to close
           </span>
         </div>
       </div>

@@ -40,7 +40,7 @@ export interface Subject {
   attendance: number;
   trend: "up" | "down" | "stable";
   trendValue: string;
-  status: "Good Standing" | "Needs Attention" | "Critical Focus";
+  status: "Good Standing" | "Needs Attention" | "Critical Focus" | "Pre-registered";
   assessments: SubjectAssessment[];
 }
 

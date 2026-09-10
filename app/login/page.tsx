@@ -37,28 +37,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-12 dark:bg-neutral-950">
       <div className="w-full max-w-md space-y-6">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center space-y-2">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white font-bold dark:bg-neutral-100 dark:text-neutral-900 shadow-xs">
               <BookOpenCheck className="h-6 w-6" />
             </div>
             <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
               AcaVise
             </span>
           </Link>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
             Welcome back to AcaVise
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+          <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-xs">
             Log in to view your academic dashboard, track targets, and prioritize your studies.
           </p>
         </div>
 
         {/* Login Card Form */}
-        <Card className="shadow-sm border-slate-200/90 dark:border-slate-800">
+        <Card className="shadow-sm border-slate-200/90 dark:border-neutral-800">
           <CardHeader className="pb-4">
             <CardTitle className="text-base">Sign In</CardTitle>
             <CardDescription>Enter your student or university email credentials</CardDescription>
@@ -84,10 +84,10 @@ export default function LoginPage() {
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-xs font-medium text-slate-700 dark:text-neutral-300">
                     Password
                   </label>
-                  <a href="#" onClick={(e) => e.preventDefault()} className="text-xs text-blue-600 hover:underline">
+                  <a href="#" onClick={(e) => e.preventDefault()} className="text-xs text-slate-600 hover:underline dark:text-neutral-400">
                     Forgot password?
                   </a>
                 </div>
@@ -101,8 +101,8 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/40 p-3 text-xs text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-blue-900">
-                <span className="font-semibold">Step 1 UI Demo:</span> Authentication state is simulated locally. Supabase Auth will be integrated in Step 2.
+              <div className="rounded-lg bg-slate-100 dark:bg-neutral-800/60 p-3 text-xs text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-neutral-700">
+                <span className="font-semibold text-slate-900 dark:text-neutral-100">Step 1 UI Demo:</span> Authentication state is simulated locally. Supabase Auth will be integrated in Step 2.
               </div>
 
               <Button type="submit" isLoading={isLoading} className="w-full gap-2">
@@ -110,9 +110,9 @@ export default function LoginPage() {
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="justify-center border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-500">
+          <CardFooter className="justify-center border-t border-slate-100 dark:border-neutral-800 pt-4 text-xs text-slate-500">
             Don&apos;t have an account yet?{" "}
-            <Link href="/signup" className="ml-1 font-semibold text-blue-600 hover:underline">
+            <Link href="/signup" className="ml-1 font-semibold text-slate-900 hover:underline dark:text-neutral-100">
               Create account
             </Link>
           </CardFooter>
