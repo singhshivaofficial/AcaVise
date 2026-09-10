@@ -22,30 +22,35 @@ export default function LandingPage() {
       title: "Academic Dashboard",
       description: "Understand your academic performance at a glance.",
       highlight: "Real-time SGPA/CGPA, attendance alerts, and continuous evaluation tracking.",
+      href: "/dashboard",
     },
     {
       icon: Calculator,
       title: "Target Calculator",
       description: "Know exactly what you need to achieve your academic goals.",
       highlight: "Reverse calculation of internal and final exam marks needed for target grades.",
+      href: "/targets",
     },
     {
       icon: Target,
       title: "Study Intelligence",
       description: "Find out which subjects deserve your attention first.",
       highlight: "Algorithmic ranking balancing credit weight, syllabus volume, and grade risk.",
+      href: "/priority",
     },
     {
       icon: CalendarDays,
       title: "Smart Planner",
       description: "Turn exams and goals into an actionable study plan.",
       highlight: "Dynamic daily schedule mapped directly to upcoming vivas and midterm exams.",
+      href: "/planner",
     },
     {
       icon: BotMessageSquare,
       title: "AI Academic Assistant",
       description: "Get personalized academic guidance based on your academic context.",
       highlight: "Contextual advice tuned to your university curriculum, weak areas, and deadlines.",
+      href: "/ai-assistant",
     },
   ];
 
@@ -53,22 +58,26 @@ export default function LandingPage() {
     {
       q: "Where do I currently stand academically?",
       a: "Comprehensive SGPA/CGPA tracking with continuous assessment analytics.",
-      color: "border-blue-200 bg-blue-50/50 text-blue-900",
+      color: "border-blue-200 bg-blue-50/50 text-blue-900 hover:border-blue-300",
+      href: "/dashboard",
     },
     {
       q: "What do I need to achieve my target?",
       a: "Precise score requirements computed backwards from your target graduation GPA.",
-      color: "border-indigo-200 bg-indigo-50/50 text-indigo-900",
+      color: "border-indigo-200 bg-indigo-50/50 text-indigo-900 hover:border-indigo-300",
+      href: "/targets",
     },
     {
       q: "What should I focus on next?",
       a: "Weighted prioritization engine identifying high-impact subjects requiring intervention.",
-      color: "border-amber-200 bg-amber-50/50 text-amber-900",
+      color: "border-amber-200 bg-amber-50/50 text-amber-900 hover:border-amber-300",
+      href: "/priority",
     },
     {
       q: "What should I do today?",
       a: "Actionable daily study blocks designed to hit exam targets with zero cognitive overload.",
-      color: "border-emerald-200 bg-emerald-50/50 text-emerald-900",
+      color: "border-emerald-200 bg-emerald-50/50 text-emerald-900 hover:border-emerald-300",
+      href: "/planner",
     },
   ];
 
@@ -94,7 +103,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
             <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
             <a href="#philosophy" className="hover:text-slate-900 transition-colors">Philosophy</a>
-            <Link href="/dashboard" className="hover:text-slate-900 transition-colors">Live Preview</Link>
+            <Link href="/dashboard" className="hover:text-slate-900 transition-colors">Live Dashboard</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -144,19 +153,21 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Quick Pillars */}
-          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto text-left">
+          {/* Quick Pillars (Interactive links) */}
+          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl mx-auto text-left">
             {questions.map((item, idx) => (
-              <div
+              <Link
                 key={idx}
-                className={`p-4 rounded-xl border ${item.color} shadow-xs transition-all hover:-translate-y-0.5`}
+                href={item.href}
+                className={`p-4 rounded-xl border ${item.color} shadow-xs transition-all hover:-translate-y-0.5 group block`}
               >
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Question #{idx + 1}
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  <span>Question #{idx + 1}</span>
+                  <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <h3 className="text-sm font-bold leading-snug">{item.q}</h3>
                 <p className="mt-2 text-xs text-slate-600 leading-relaxed">{item.a}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -181,9 +192,10 @@ export default function LandingPage() {
             {features.map((feat, index) => {
               const Icon = feat.icon;
               return (
-                <div
+                <Link
                   key={index}
-                  className="rounded-2xl border border-slate-200/80 bg-slate-50/40 p-6 hover:bg-slate-50 hover:border-slate-300 transition-all flex flex-col justify-between group"
+                  href={feat.href}
+                  className="rounded-2xl border border-slate-200/80 bg-slate-50/40 p-6 hover:bg-slate-50 hover:border-slate-300 transition-all flex flex-col justify-between group shadow-2xs"
                 >
                   <div>
                     <div className="h-11 w-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs mb-4 group-hover:scale-105 transition-transform">
@@ -195,17 +207,20 @@ export default function LandingPage() {
                   </div>
 
                   <div className="mt-5 pt-4 border-t border-slate-200/60 flex items-center text-xs font-semibold text-blue-600 group-hover:text-blue-700">
-                    <span>Feature module</span>
+                    <span>Explore module</span>
                     <ArrowRight className="h-3.5 w-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
                   </div>
-                </div>
+                </Link>
               );
             })}
 
             {/* Target Calculator Highlight Card */}
-            <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-6 flex flex-col justify-between shadow-lg shadow-blue-500/10">
+            <Link
+              href="/targets"
+              className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-6 flex flex-col justify-between shadow-lg shadow-blue-500/10 hover:shadow-xl transition-all group"
+            >
               <div>
-                <div className="h-11 w-11 rounded-xl bg-white/10 text-white flex items-center justify-center backdrop-blur-xs mb-4">
+                <div className="h-11 w-11 rounded-xl bg-white/10 text-white flex items-center justify-center backdrop-blur-xs mb-4 group-hover:scale-105 transition-transform">
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <h4 className="text-lg font-bold">Reverse Score Engine</h4>
@@ -217,12 +232,11 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <Link href="/dashboard" className="mt-5">
-                <Button variant="secondary" size="sm" className="w-full bg-white text-blue-900 hover:bg-blue-50 font-semibold">
-                  Test In Dashboard
-                </Button>
-              </Link>
-            </div>
+              <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between text-xs font-semibold text-white">
+                <span>Simulate Targets</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -300,6 +314,7 @@ export default function LandingPage() {
               <Link href="/priority" className="hover:text-slate-300">Priorities</Link>
               <Link href="/planner" className="hover:text-slate-300">Planner</Link>
               <Link href="/ai-assistant" className="hover:text-slate-300">AI Assistant</Link>
+              <Link href="/settings" className="hover:text-slate-300">Settings</Link>
             </div>
           </div>
         </div>

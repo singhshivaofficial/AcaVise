@@ -6,11 +6,47 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CalendarDays, Clock, CheckCircle2, Plus, Calendar, Flame, AlertCircle } from "lucide-react";
-import { MOCK_STUDY_PLAN, MOCK_UPCOMING_EVENTS } from "@/lib/mock-data";
+import { Dialog } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Clock, CheckCircle2, Plus, Calendar, Flame, Sparkles } from "lucide-react";
+import { MOCK_STUDY_PLAN } from "@/lib/mock-data";
+import { StudyPlanDay, StudyPlanTask } from "@/types";
 
 export default function PlannerPage() {
-  const [planDays, setPlanDays] = React.useState(MOCK_STUDY_PLAN);
+  const [planDays, setPlanDays] = React.useState<StudyPlanDay[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("acavise_study_plan");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // fallback
+        }
+      }
+    }
+    return MOCK_STUDY_PLAN;
+  });
+
+  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
+
+  // Add Study Block Form State
+  const [formData, setFormData] = React.useState({
+    day: "Monday",
+    subject: "Analysis of Algorithms",
+    title: "",
+    duration: "60",
+    priority: "High" as "High" | "Medium" | "Low",
+    timeSlot: "08:00 PM - 09:00 PM",
+  });
+  const [formError, setFormError] = React.useState("");
+
+  // Persist to localStorage
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("acavise_study_plan", JSON.stringify(planDays));
+    }
+  }, [planDays]);
 
   const toggleTask = (dayIndex: number, taskId: string) => {
     setPlanDays((prev) =>
@@ -26,12 +62,56 @@ export default function PlannerPage() {
     );
   };
 
+  const handleAddBlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title.trim()) {
+      setFormError("Please enter a study task topic.");
+      return;
+    }
+
+    const newTask: StudyPlanTask = {
+      id: `tsk_custom_${Date.now()}`,
+      subject: formData.subject,
+      title: formData.title.trim(),
+      durationMinutes: parseInt(formData.duration, 10) || 60,
+      completed: false,
+      priority: formData.priority,
+      timeSlot: formData.timeSlot,
+    };
+
+    setPlanDays((prev) =>
+      prev.map((day) => {
+        if (day.day.toLowerCase() === formData.day.toLowerCase()) {
+          return {
+            ...day,
+            totalHours: +(day.totalHours + newTask.durationMinutes / 60).toFixed(1),
+            tasks: [...day.tasks, newTask],
+          };
+        }
+        return day;
+      })
+    );
+
+    setFormData({
+      day: "Monday",
+      subject: "Analysis of Algorithms",
+      title: "",
+      duration: "60",
+      priority: "High",
+      timeSlot: "08:00 PM - 09:00 PM",
+    });
+    setFormError("");
+    setIsAddModalOpen(false);
+  };
+
   const totalTasks = planDays.reduce((acc, d) => acc + d.tasks.length, 0);
   const completedTasks = planDays.reduce(
     (acc, d) => acc + d.tasks.filter((t) => t.completed).length,
     0
   );
   const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+  const totalPlannedHours = planDays.reduce((acc, d) => acc + d.totalHours, 0);
 
   return (
     <AppShell>
@@ -43,8 +123,8 @@ export default function PlannerPage() {
               <h2 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
                 Smart Study Planner
               </h2>
-              <Badge variant="warning" size="sm">
-                Step 9 Engine Preview
+              <Badge variant="default" size="sm">
+                Interactive Schedule
               </Badge>
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -53,10 +133,7 @@ export default function PlannerPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <Calendar className="h-3.5 w-3.5" /> This Week
-            </Button>
-            <Button size="sm" className="gap-1.5 text-xs">
+            <Button onClick={() => setIsAddModalOpen(true)} size="sm" className="gap-1.5 text-xs">
               <Plus className="h-3.5 w-3.5" /> Add Study Block
             </Button>
           </div>
@@ -64,7 +141,7 @@ export default function PlannerPage() {
 
         {/* Progress & Focus Summary */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="p-4 bg-white dark:bg-slate-900 sm:col-span-2">
+          <Card className="p-4 bg-white dark:bg-slate-900 sm:col-span-2 shadow-xs">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Flame className="h-5 w-5 text-amber-500" />
@@ -77,19 +154,22 @@ export default function PlannerPage() {
               </span>
             </div>
             <Progress value={completionPercentage} variant="default" size="md" />
+            <p className="text-[11px] text-slate-400 mt-2">
+              Click any task card below to toggle completion and update your progress.
+            </p>
           </Card>
 
-          <Card className="p-4 bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-900">
+          <Card className="p-4 bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-900 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-blue-600 text-white flex items-center justify-center">
                 <Clock className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-xs text-blue-900 dark:text-blue-200 font-semibold">
-                  Today&apos;s Revision Target
+                  Total Planned Schedule
                 </p>
                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  3.5 Hours • 3 Sessions
+                  {totalPlannedHours.toFixed(1)} Hours • {totalTasks} Sessions
                 </p>
               </div>
             </div>
@@ -124,73 +204,178 @@ export default function PlannerPage() {
               </CardHeader>
 
               <CardContent className="p-4 space-y-3 flex-1">
-                {day.tasks.map((task) => (
-                  <div
-                    key={task.id}
-                    onClick={() => toggleTask(dIdx, task.id)}
-                    className={`p-3 rounded-lg border transition-all cursor-pointer select-none ${
-                      task.completed
-                        ? "bg-emerald-50/40 border-emerald-200 text-slate-400 dark:bg-emerald-950/10 dark:border-emerald-900"
-                        : "bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/60 dark:bg-slate-800/40 dark:border-slate-700/80"
-                    }`}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <div
-                        className={`mt-0.5 h-4 w-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
-                          task.completed
-                            ? "bg-emerald-600 border-emerald-600 text-white"
-                            : "border-slate-400 bg-white dark:bg-slate-800"
-                        }`}
-                      >
-                        {task.completed && <CheckCircle2 className="h-3.5 w-3.5" />}
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
-                          <span
-                            className={`text-xs font-bold ${
-                              task.completed
-                                ? "line-through text-slate-400"
-                                : "text-slate-800 dark:text-slate-200"
-                            }`}
-                          >
-                            {task.subject}
-                          </span>
-                          <Badge
-                            variant={
-                              task.priority === "High"
-                                ? "destructive"
-                                : task.priority === "Medium"
-                                ? "warning"
-                                : "secondary"
-                            }
-                            size="sm"
-                          >
-                            {task.durationMinutes}m
-                          </Badge>
-                        </div>
-                        <p
-                          className={`mt-1 text-xs leading-snug ${
+                {day.tasks.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-slate-400">
+                    No study blocks scheduled for {day.day}.
+                  </div>
+                ) : (
+                  day.tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      onClick={() => toggleTask(dIdx, task.id)}
+                      className={`p-3 rounded-xl border transition-all cursor-pointer select-none ${
+                        task.completed
+                          ? "bg-emerald-50/40 border-emerald-200 text-slate-400 dark:bg-emerald-950/10 dark:border-emerald-900"
+                          : "bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/70 dark:bg-slate-800/40 dark:border-slate-700/80"
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <div
+                          className={`mt-0.5 h-4 w-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
                             task.completed
-                              ? "line-through text-slate-400"
-                              : "text-slate-600 dark:text-slate-400"
+                              ? "bg-emerald-600 border-emerald-600 text-white"
+                              : "border-slate-400 bg-white dark:bg-slate-800"
                           }`}
                         >
-                          {task.title}
-                        </p>
-                        {task.timeSlot && (
-                          <span className="mt-1.5 inline-block text-[10px] font-mono text-slate-400">
-                            🕒 {task.timeSlot}
-                          </span>
-                        )}
+                          {task.completed && <CheckCircle2 className="h-3.5 w-3.5" />}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span
+                              className={`text-xs font-bold ${
+                                task.completed
+                                  ? "line-through text-slate-400"
+                                  : "text-slate-800 dark:text-slate-200"
+                              }`}
+                            >
+                              {task.subject}
+                            </span>
+                            <Badge
+                              variant={
+                                task.priority === "High"
+                                  ? "destructive"
+                                  : task.priority === "Medium"
+                                  ? "warning"
+                                  : "secondary"
+                              }
+                              size="sm"
+                            >
+                              {task.durationMinutes}m
+                            </Badge>
+                          </div>
+                          <p
+                            className={`mt-1 text-xs leading-snug ${
+                              task.completed
+                                ? "line-through text-slate-400"
+                                : "text-slate-600 dark:text-slate-400"
+                            }`}
+                          >
+                            {task.title}
+                          </p>
+                          {task.timeSlot && (
+                            <span className="mt-1.5 inline-block text-[10px] font-mono text-slate-400">
+                              🕒 {task.timeSlot}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* Add Study Block Modal */}
+        <Dialog
+          isOpen={isAddModalOpen}
+          onClose={() => {
+            setIsAddModalOpen(false);
+            setFormError("");
+          }}
+          title="Add New Study Session"
+          description="Schedule a focused revision block into your weekly timetable."
+        >
+          <form onSubmit={handleAddBlock} className="space-y-4">
+            {formError && (
+              <p className="text-xs text-rose-600 font-medium bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+                {formError}
+              </p>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <Select
+                label="Day of Week"
+                value={formData.day}
+                onChange={(e) => setFormData({ ...formData, day: e.target.value })}
+                options={[
+                  { value: "Monday", label: "Monday" },
+                  { value: "Tuesday", label: "Tuesday" },
+                  { value: "Wednesday", label: "Wednesday" },
+                ]}
+              />
+              <Select
+                label="Course"
+                value={formData.subject}
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                options={[
+                  { value: "Analysis of Algorithms", label: "CS501 (Algorithms)" },
+                  { value: "Computer Organization", label: "CS502 (COA)" },
+                  { value: "Database Management", label: "CS503 (DBMS)" },
+                  { value: "Discrete Structures", label: "CS504 (Discrete)" },
+                  { value: "OS Lab", label: "CS505 (OS Lab)" },
+                ]}
+              />
+            </div>
+
+            <Input
+              label="Task Topic / Goal *"
+              placeholder="e.g. Master Floyd-Warshall and Bellman-Ford algorithms"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+            />
+
+            <div className="grid grid-cols-3 gap-3">
+              <Select
+                label="Duration"
+                value={formData.duration}
+                onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                options={[
+                  { value: "30", label: "30 mins" },
+                  { value: "45", label: "45 mins" },
+                  { value: "60", label: "60 mins" },
+                  { value: "90", label: "90 mins" },
+                  { value: "120", label: "120 mins" },
+                ]}
+              />
+              <Select
+                label="Priority"
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value as "High" | "Medium" | "Low" })}
+                options={[
+                  { value: "High", label: "High" },
+                  { value: "Medium", label: "Medium" },
+                  { value: "Low", label: "Low" },
+                ]}
+              />
+              <Input
+                label="Time Slot"
+                value={formData.timeSlot}
+                onChange={(e) => setFormData({ ...formData, timeSlot: e.target.value })}
+                placeholder="e.g. 07:00 PM"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setFormError("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                Add Block
+              </Button>
+            </div>
+          </form>
+        </Dialog>
       </div>
     </AppShell>
   );

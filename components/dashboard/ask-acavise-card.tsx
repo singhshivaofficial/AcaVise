@@ -41,7 +41,7 @@ export function AskAcaViseCard() {
             {suggestedQuestions.map((q, idx) => (
               <Link
                 key={idx}
-                href="/ai-assistant"
+                href={`/ai-assistant?q=${encodeURIComponent(q)}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/50 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/80 transition-all shadow-2xs"
               >
                 <MessageSquareQuote className="h-3.5 w-3.5 text-blue-500" />

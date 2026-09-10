@@ -1,34 +1,95 @@
+"use client";
+
 import * as React from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, Target, Sparkles, HelpCircle, ArrowRight, CheckCircle2 } from "lucide-react";
-import { MOCK_TARGET_PREVIEW, MOCK_SUBJECTS } from "@/lib/mock-data";
+import { Calculator, Target, Sparkles, HelpCircle, RotateCcw, CheckCircle2, AlertTriangle } from "lucide-react";
+import { MOCK_SUBJECTS } from "@/lib/mock-data";
 
 export default function TargetsPage() {
+  const [targetCgpaInput, setTargetCgpaInput] = React.useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("acavise_target_cgpa");
+      if (saved) return saved;
+    }
+    return "8.80";
+  });
+
+  const [isCalculated, setIsCalculated] = React.useState(false);
+
+  const currentCgpa = 8.34;
+  const completedCredits = 96;
+  const totalDegreeCredits = 120;
+  const remainingCredits = totalDegreeCredits - completedCredits; // 24 credits (Sem 5 & 6)
+
+  const targetCgpaNum = parseFloat(targetCgpaInput) || 8.8;
+
+  // Exact formula calculation
+  const rawRequiredSgpa =
+    ((targetCgpaNum * totalDegreeCredits) - (currentCgpa * completedCredits)) / remainingCredits;
+
+  const displayRequiredSgpa = rawRequiredSgpa.toFixed(2);
+  const targetGap = (targetCgpaNum - currentCgpa).toFixed(2);
+
+  // Dynamic feasibility logic
+  let feasibilityBadge: { label: string; variant: "success" | "warning" | "destructive" } = {
+    label: "Challenging",
+    variant: "warning",
+  };
+  if (rawRequiredSgpa <= 8.5) {
+    feasibilityBadge = { label: "Highly Achievable", variant: "success" };
+  } else if (rawRequiredSgpa <= 9.3) {
+    feasibilityBadge = { label: "Challenging", variant: "warning" };
+  } else if (rawRequiredSgpa <= 10.0) {
+    feasibilityBadge = { label: "Requires Near-Perfection", variant: "warning" };
+  } else {
+    feasibilityBadge = { label: "Infeasible (> 10.0 SGPA Required)", variant: "destructive" };
+  }
+
+  // Required exam average estimation
+  const requiredExamAvg = Math.min(100, Math.max(40, Math.round(rawRequiredSgpa * 9.2)));
+
+  const handleCalculate = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (typeof window !== "undefined") {
+      localStorage.setItem("acavise_target_cgpa", targetCgpaInput);
+    }
+    setIsCalculated(true);
+    setTimeout(() => setIsCalculated(false), 2000);
+  };
+
   return (
     <AppShell>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
-              Target Marks & CGPA Calculator
-            </h2>
-            <Badge variant="warning" size="sm">
-              Phase 6 Engine Preview
-            </Badge>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
+                Target Marks & CGPA Calculator
+              </h2>
+              <Badge variant="default" size="sm">
+                Live Simulator
+              </Badge>
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Calculate the exact SGPA and end-semester exam marks required to reach your target graduation CGPA.
+            </p>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Calculate the exact SGPA and end-semester exam marks required to reach your target graduation CGPA.
-          </p>
+
+          <Button onClick={() => handleCalculate()} className="gap-2 shrink-0">
+            <RotateCcw className="h-4 w-4" />
+            {isCalculated ? "Recalculated!" : "Recalculate Breakdown"}
+          </Button>
         </div>
 
-        {/* Target Simulator Card */}
+        {/* Target Simulator Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="border-blue-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          {/* Card 1: Target CGPA Input */}
+          <Card className="border-blue-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -39,23 +100,36 @@ export default function TargetsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-blue-600">8.80</span>
+                <span className="text-3xl font-extrabold text-blue-600">{targetCgpaNum.toFixed(2)}</span>
                 <span className="text-xs text-slate-400 font-medium">/ 10.0 Scale</span>
               </div>
               <p className="text-xs text-slate-500">
-                Current: <strong>8.34</strong> across 96 completed credits
+                Current: <strong>{currentCgpa}</strong> across {completedCredits} completed credits
               </p>
-              <Input
-                label="Simulate New Target CGPA"
-                type="number"
-                step="0.05"
-                defaultValue="8.80"
-                className="h-8 text-xs"
-              />
+              <div className="space-y-1.5 pt-1">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Adjust Target CGPA:
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    step="0.05"
+                    min="5.0"
+                    max="10.0"
+                    value={targetCgpaInput}
+                    onChange={(e) => setTargetCgpaInput(e.target.value)}
+                    className="h-9 text-xs font-bold"
+                  />
+                  <Button size="sm" onClick={() => handleCalculate()} className="shrink-0">
+                    Apply
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="border-indigo-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          {/* Card 2: Required SGPA Output */}
+          <Card className="border-indigo-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -66,22 +140,24 @@ export default function TargetsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-indigo-600">9.25</span>
+                <span className={`text-3xl font-extrabold ${rawRequiredSgpa > 10 ? "text-rose-600" : "text-indigo-600"}`}>
+                  {displayRequiredSgpa}
+                </span>
                 <span className="text-xs text-slate-400 font-medium">in Sem 5 & 6</span>
               </div>
               <p className="text-xs text-slate-500">
-                To bridge <strong>+0.46 CGPA</strong> across remaining 24 credits
+                To bridge <strong>{targetGap.startsWith("-") ? targetGap : `+${targetGap}`} CGPA</strong> across remaining {remainingCredits} credits
               </p>
               <div className="flex items-center gap-1.5 pt-1">
-                <Badge variant="warning" size="sm">
-                  {MOCK_TARGET_PREVIEW.feasibility}
+                <Badge variant={feasibilityBadge.variant} size="sm">
+                  {feasibilityBadge.label}
                 </Badge>
-                <span className="text-[11px] text-slate-500">Requires minimum 3 &apos;O&apos; grades</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-emerald-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          {/* Card 3: Endterm Average */}
+          <Card className="border-emerald-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -92,25 +168,27 @@ export default function TargetsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-emerald-600">84.5%</span>
-                <span className="text-xs text-slate-400 font-medium">Exam Average</span>
+                <span className="text-3xl font-extrabold text-emerald-600">{requiredExamAvg}%</span>
+                <span className="text-xs text-slate-400 font-medium">Exam Average Needed</span>
               </div>
               <p className="text-xs text-slate-500">
-                Based on current continuous internal assessments (75.2% avg)
+                Projected against your continuous internal evaluation average (76.8%)
               </p>
-              <Button size="sm" variant="subtle" className="w-full text-xs">
-                Recalculate Breakdown
-              </Button>
+              <div className="pt-1">
+                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-900 block text-center">
+                  {rawRequiredSgpa <= 9.0 ? "Target is well within reach" : "Prioritize 4-Credit Core Subjects"}
+                </span>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Reverse Calculated Subject Goals Table */}
+        {/* Dynamic Subject Breakdown Table */}
         <Card>
           <CardHeader>
             <CardTitle>Subject-by-Subject Required Marks Breakdown</CardTitle>
             <CardDescription>
-              Exact marks required in upcoming end-semester examinations to achieve your target SGPA (9.25)
+              Dynamically estimated marks required in end-semester examinations to achieve your target SGPA ({displayRequiredSgpa})
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -128,8 +206,16 @@ export default function TargetsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
                   {MOCK_SUBJECTS.map((sub, i) => {
-                    const reqMarks = [84, 78, 72, 88, 80][i] || 75;
-                    const diff = reqMarks > 85 ? "High Effort" : reqMarks > 75 ? "Moderate" : "Comfortable";
+                    // Dynamic mark offset based on target SGPA
+                    const delta = (rawRequiredSgpa - 8.5) * 6;
+                    const baseMarks = [84, 78, 72, 88, 80][i] || 75;
+                    const computedMarks = Math.min(100, Math.max(40, Math.round(baseMarks + delta)));
+                    const diff =
+                      computedMarks > 88
+                        ? "High Effort"
+                        : computedMarks > 75
+                        ? "Moderate"
+                        : "Comfortable";
 
                     return (
                       <tr key={sub.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
@@ -148,9 +234,9 @@ export default function TargetsPage() {
                         </td>
                         <td className="py-3.5 px-3">
                           <span className="font-bold text-blue-600 dark:text-blue-400">
-                            {reqMarks} / 100
+                            {computedMarks} / 100
                           </span>
-                          <span className="text-xs text-slate-400 ml-1.5">(≥ {reqMarks}%)</span>
+                          <span className="text-xs text-slate-400 ml-1.5">(≥ {computedMarks}%)</span>
                         </td>
                         <td className="py-3.5 px-3 text-right">
                           <Badge
@@ -174,16 +260,16 @@ export default function TargetsPage() {
           <CardContent className="p-5 space-y-2 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-200 text-sm">
               <HelpCircle className="h-4 w-4 text-blue-600" />
-              <span>How the Target Calculation Engine works</span>
+              <span>Calculation Engine Formula</span>
             </div>
             <p className="leading-relaxed">
-              In <strong>Step 5 & Step 6</strong>, this engine uses your university&apos;s exact grading scale formula:
+              In <strong>Step 5 & Step 6</strong>, this engine will connect to your real university grading scale:
             </p>
             <p className="font-mono bg-white dark:bg-slate-800 p-2.5 rounded-md border border-slate-200 dark:border-slate-700 text-blue-700 dark:text-blue-300">
               Required SGPA = [ (Target CGPA × Total Degree Credits) - (Current CGPA × Completed Credits) ] / Remaining Credits
             </p>
             <p className="leading-relaxed">
-              It then breaks this down into exact numerical threshold marks across your internals (weightage 50%) and end-semester exams (weightage 50%), accounting for credit weights.
+              For your current profile: <code>[ ({targetCgpaNum} × 120) - (8.34 × 96) ] / 24 = {displayRequiredSgpa} SGPA</code>.
             </p>
           </CardContent>
         </Card>

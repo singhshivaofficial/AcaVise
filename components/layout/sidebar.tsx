@@ -173,7 +173,12 @@ export function Sidebar({ className, onItemClick }: SidebarProps) {
 
       {/* Mock User Footer */}
       <div className="border-t border-slate-100 dark:border-slate-800 p-3">
-        <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+        <Link
+          href="/settings"
+          onClick={onItemClick}
+          className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          title="Open Settings & Profile"
+        >
           <div className="h-8 w-8 rounded-full bg-blue-600 text-white font-semibold flex items-center justify-center text-xs">
             AR
           </div>
@@ -185,7 +190,7 @@ export function Sidebar({ className, onItemClick }: SidebarProps) {
               alex.rivera@univ.edu
             </span>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   );

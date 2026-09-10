@@ -1,10 +1,41 @@
+"use client";
+
+import * as React from "react";
 import Link from "next/link";
-import { BookOpenCheck, Lock, Mail, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { BookOpenCheck, Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = React.useState("alex.rivera@eng.univ.edu");
+  const [password, setPassword] = React.useState("mock-password");
+  const [error, setError] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password.");
+      return;
+    }
+
+    setError("");
+    setIsLoading(true);
+
+    setTimeout(() => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "acavise_mock_user",
+          JSON.stringify({ email: email.trim(), loggedInAt: new Date().toISOString() })
+        );
+      }
+      router.push("/dashboard");
+    }, 500);
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
       <div className="w-full max-w-md space-y-6">
@@ -26,46 +57,58 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Login Card UI Mockup */}
+        {/* Login Card Form */}
         <Card className="shadow-sm border-slate-200/90 dark:border-slate-800">
           <CardHeader className="pb-4">
             <CardTitle className="text-base">Sign In</CardTitle>
             <CardDescription>Enter your student or university email credentials</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Input
-              label="University / Student Email"
-              type="email"
-              placeholder="alex.rivera@univ.edu"
-              defaultValue="alex.rivera@eng.univ.edu"
-              leftIcon={<Mail className="h-4 w-4" />}
-            />
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                  Password
-                </label>
-                <a href="#" className="text-xs text-blue-600 hover:underline">
-                  Forgot password?
-                </a>
-              </div>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              {error && (
+                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
               <Input
-                type="password"
-                placeholder="••••••••••••"
-                defaultValue="mock-password"
-                leftIcon={<Lock className="h-4 w-4" />}
+                label="University / Student Email"
+                type="email"
+                placeholder="alex.rivera@univ.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                leftIcon={<Mail className="h-4 w-4" />}
+                required
               />
-            </div>
 
-            <div className="rounded-lg bg-blue-50 dark:bg-blue-950/40 p-3 text-xs text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-blue-900">
-              <span className="font-semibold">Step 1 UI Demo:</span> Authentication will be connected in Step 2. Click below to explore the dashboard directly.
-            </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    Password
+                  </label>
+                  <a href="#" onClick={(e) => e.preventDefault()} className="text-xs text-blue-600 hover:underline">
+                    Forgot password?
+                  </a>
+                </div>
+                <Input
+                  type="password"
+                  placeholder="••••••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  leftIcon={<Lock className="h-4 w-4" />}
+                  required
+                />
+              </div>
 
-            <Link href="/dashboard" className="block w-full">
-              <Button className="w-full gap-2">
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/40 p-3 text-xs text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-blue-900">
+                <span className="font-semibold">Step 1 UI Demo:</span> Authentication state is simulated locally. Supabase Auth will be integrated in Step 2.
+              </div>
+
+              <Button type="submit" isLoading={isLoading} className="w-full gap-2">
                 Continue to Dashboard <ArrowRight className="h-4 w-4" />
               </Button>
-            </Link>
+            </form>
           </CardContent>
           <CardFooter className="justify-center border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-500">
             Don&apos;t have an account yet?{" "}

@@ -7,14 +7,69 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Bell, Palette, GraduationCap, Shield, Save, Check } from "lucide-react";
+import { User, Bell, Palette, GraduationCap, Save, Check } from "lucide-react";
 import { MOCK_USER } from "@/lib/mock-data";
 
 export default function SettingsPage() {
+  const [profile, setProfile] = React.useState({
+    name: MOCK_USER.name,
+    email: MOCK_USER.email,
+    university: MOCK_USER.university,
+    branch: MOCK_USER.branch,
+    semester: String(MOCK_USER.semester),
+    targetCgpa: String(MOCK_USER.targetCgpa),
+  });
+
+  const [academicRules, setAcademicRules] = React.useState({
+    gradingScale: "10",
+    attendanceThreshold: "75",
+    totalCredits: "120",
+    weightRatio: "50-50",
+  });
+
+  const [theme, setTheme] = React.useState<"light" | "dark" | "system">("light");
+
+  const [notifications, setNotifications] = React.useState({
+    examCountdown: true,
+    attendanceWarning: true,
+    weeklyDigest: false,
+  });
+
   const [isSaved, setIsSaved] = React.useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Load from localStorage on mount
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("acavise_settings");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.profile) setProfile(parsed.profile);
+          if (parsed.academicRules) setAcademicRules(parsed.academicRules);
+          if (parsed.theme) setTheme(parsed.theme);
+          if (parsed.notifications) setNotifications(parsed.notifications);
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }, []);
+
+  const handleSave = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (typeof window !== "undefined") {
+      const payload = {
+        profile,
+        academicRules,
+        theme,
+        notifications,
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem("acavise_settings", JSON.stringify(payload));
+      localStorage.setItem("acavise_target_cgpa", profile.targetCgpa);
+    }
+
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
@@ -33,9 +88,9 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <Button onClick={handleSave} className="gap-2 shrink-0">
+          <Button onClick={() => handleSave()} className="gap-2 shrink-0">
             {isSaved ? <Check className="h-4 w-4 text-emerald-300" /> : <Save className="h-4 w-4" />}
-            {isSaved ? "Saved Successfully" : "Save Preferences"}
+            {isSaved ? "Saved to Prototype!" : "Save Preferences"}
           </Button>
         </div>
 
@@ -54,11 +109,13 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Full Name"
-                defaultValue={MOCK_USER.name}
+                value={profile.name}
+                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
               />
               <Input
                 label="University Email"
-                defaultValue={MOCK_USER.email}
+                value={profile.email}
+                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                 type="email"
               />
             </div>
@@ -66,18 +123,21 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="University / Institution"
-                defaultValue={MOCK_USER.university}
+                value={profile.university}
+                onChange={(e) => setProfile({ ...profile, university: e.target.value })}
               />
               <Input
                 label="Department / Branch"
-                defaultValue={MOCK_USER.branch}
+                value={profile.branch}
+                onChange={(e) => setProfile({ ...profile, branch: e.target.value })}
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 label="Current Semester"
-                defaultValue={String(MOCK_USER.semester)}
+                value={profile.semester}
+                onChange={(e) => setProfile({ ...profile, semester: e.target.value })}
                 options={[
                   { value: "1", label: "Semester 1" },
                   { value: "2", label: "Semester 2" },
@@ -93,7 +153,8 @@ export default function SettingsPage() {
                 label="Target Graduation CGPA"
                 type="number"
                 step="0.05"
-                defaultValue={String(MOCK_USER.targetCgpa)}
+                value={profile.targetCgpa}
+                onChange={(e) => setProfile({ ...profile, targetCgpa: e.target.value })}
               />
             </div>
           </CardContent>
@@ -114,7 +175,8 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 label="Grading Scale System"
-                defaultValue="10"
+                value={academicRules.gradingScale}
+                onChange={(e) => setAcademicRules({ ...academicRules, gradingScale: e.target.value })}
                 options={[
                   { value: "10", label: "10.0 UGC / AICTE Scale (India/Asia)" },
                   { value: "4", label: "4.0 GPA Scale (US / Standard)" },
@@ -124,7 +186,8 @@ export default function SettingsPage() {
               />
               <Select
                 label="Minimum Attendance Threshold"
-                defaultValue="75"
+                value={academicRules.attendanceThreshold}
+                onChange={(e) => setAcademicRules({ ...academicRules, attendanceThreshold: e.target.value })}
                 options={[
                   { value: "75", label: "75% (Standard University Cutoff)" },
                   { value: "80", label: "80% (Strict Department Policy)" },
@@ -137,11 +200,13 @@ export default function SettingsPage() {
               <Input
                 label="Total Degree Credits Required"
                 type="number"
-                defaultValue="120"
+                value={academicRules.totalCredits}
+                onChange={(e) => setAcademicRules({ ...academicRules, totalCredits: e.target.value })}
               />
               <Select
                 label="Assessment Weight Ratio (Internal : Endterm)"
-                defaultValue="50-50"
+                value={academicRules.weightRatio}
+                onChange={(e) => setAcademicRules({ ...academicRules, weightRatio: e.target.value })}
                 options={[
                   { value: "50-50", label: "50% Internal : 50% End Semester" },
                   { value: "40-60", label: "40% Internal : 60% End Semester" },
@@ -165,17 +230,52 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl border-2 border-blue-600 bg-white dark:bg-slate-800 flex items-center justify-between cursor-pointer">
+              <div
+                onClick={() => setTheme("light")}
+                className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  theme === "light"
+                    ? "border-blue-600 bg-blue-50/50 dark:bg-slate-800 text-blue-900"
+                    : "border-slate-200 hover:border-slate-300 dark:border-slate-800 text-slate-500"
+                }`}
+              >
                 <span className="text-xs font-semibold">Light Theme</span>
-                <Badge variant="default" size="sm">Active</Badge>
+                {theme === "light" ? (
+                  <Badge variant="default" size="sm">Active</Badge>
+                ) : (
+                  <span className="text-[10px] text-slate-400">Select</span>
+                )}
               </div>
-              <div className="p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-800 flex items-center justify-between cursor-pointer text-slate-500">
+
+              <div
+                onClick={() => setTheme("dark")}
+                className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  theme === "dark"
+                    ? "border-blue-600 bg-blue-50/50 dark:bg-slate-800 text-blue-900"
+                    : "border-slate-200 hover:border-slate-300 dark:border-slate-800 text-slate-500"
+                }`}
+              >
                 <span className="text-xs font-semibold">Dark Theme</span>
-                <Badge variant="secondary" size="sm">Available</Badge>
+                {theme === "dark" ? (
+                  <Badge variant="default" size="sm">Active</Badge>
+                ) : (
+                  <span className="text-[10px] text-slate-400">Select</span>
+                )}
               </div>
-              <div className="p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-800 flex items-center justify-between cursor-pointer text-slate-500">
+
+              <div
+                onClick={() => setTheme("system")}
+                className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  theme === "system"
+                    ? "border-blue-600 bg-blue-50/50 dark:bg-slate-800 text-blue-900"
+                    : "border-slate-200 hover:border-slate-300 dark:border-slate-800 text-slate-500"
+                }`}
+              >
                 <span className="text-xs font-semibold">System Default</span>
-                <Badge variant="secondary" size="sm">Auto</Badge>
+                {theme === "system" ? (
+                  <Badge variant="default" size="sm">Active</Badge>
+                ) : (
+                  <span className="text-[10px] text-slate-400">Select</span>
+                )}
               </div>
             </div>
           </CardContent>
@@ -195,24 +295,27 @@ export default function SettingsPage() {
           <CardContent className="space-y-3">
             {[
               {
+                id: "examCountdown",
                 title: "Exam & Assessment Countdown",
                 desc: "Send reminders 48h and 24h prior to scheduled internal tests and final exams.",
-                defaultChecked: true,
+                checked: notifications.examCountdown,
               },
               {
+                id: "attendanceWarning",
                 title: "Attendance Cutoff Warning",
                 desc: "Alert when subject attendance drops below 80% (safety threshold).",
-                defaultChecked: true,
+                checked: notifications.attendanceWarning,
               },
               {
+                id: "weeklyDigest",
                 title: "Weekly Study Priority Digest",
                 desc: "Summary email highlighting the top 3 focus subjects every Sunday evening.",
-                defaultChecked: false,
+                checked: notifications.weeklyDigest,
               },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-start justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-800/30"
+            ].map((item) => (
+              <label
+                key={item.id}
+                className="flex items-start justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-800/30 cursor-pointer select-none"
               >
                 <div>
                   <h4 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
@@ -224,10 +327,16 @@ export default function SettingsPage() {
                 </div>
                 <input
                   type="checkbox"
-                  defaultChecked={item.defaultChecked}
-                  className="h-4 w-4 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  checked={item.checked}
+                  onChange={(e) =>
+                    setNotifications({
+                      ...notifications,
+                      [item.id]: e.target.checked,
+                    })
+                  }
+                  className="h-4 w-4 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
-              </div>
+              </label>
             ))}
           </CardContent>
         </Card>
