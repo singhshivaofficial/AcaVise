@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, Settings, LogOut, Target, GraduationCap } from "lucide-react";
 import { useAcademicPreferences } from "@/lib/academic-context";
+import { createClient } from "@/lib/supabase/client";
+import { getInitials } from "@/lib/utils";
 
 interface ProfileMenuProps {
   isOpen: boolean;
@@ -31,12 +33,16 @@ export function ProfileMenu({ isOpen, onClose }: ProfileMenuProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     onClose();
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("acavise_mock_user");
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
     }
     router.push("/login");
+    router.refresh();
   };
 
   if (!isOpen) return null;
@@ -50,7 +56,7 @@ export function ProfileMenu({ isOpen, onClose }: ProfileMenuProps) {
       <div className="p-4 border-b border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-800/40">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center text-sm shadow-xs dark:bg-neutral-100 dark:text-neutral-900">
-            AR
+            {getInitials(profile.name)}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-slate-900 dark:text-neutral-100 truncate">
@@ -63,7 +69,7 @@ export function ProfileMenu({ isOpen, onClose }: ProfileMenuProps) {
         </div>
         <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-neutral-300 font-medium">
           <GraduationCap className="h-3.5 w-3.5 text-slate-500 dark:text-neutral-400" />
-          <span>Semester {currentSemester} • CSE Department</span>
+          <span>Semester {currentSemester} • {profile.branch || "Engineering"}</span>
         </div>
       </div>
 
@@ -103,7 +109,7 @@ export function ProfileMenu({ isOpen, onClose }: ProfileMenuProps) {
           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors text-left font-medium cursor-pointer"
         >
           <LogOut className="h-4 w-4" />
-          <span>Log Out (Prototype)</span>
+          <span>Log Out</span>
         </button>
       </div>
     </div>

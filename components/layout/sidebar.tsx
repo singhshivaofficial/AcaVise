@@ -15,7 +15,7 @@ import {
   ChevronRight,
   BookOpenCheck,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { useAcademicPreferences } from "@/lib/academic-context";
 
 export const NAV_ITEMS = [
@@ -172,7 +172,7 @@ export function Sidebar({ className, onItemClick }: SidebarProps) {
         </div>
       </div>
 
-      {/* Mock User Footer */}
+      {/* User Profile Footer */}
       <div className="border-t border-slate-100 dark:border-neutral-800 p-3">
         <Link
           href="/settings"
@@ -181,7 +181,7 @@ export function Sidebar({ className, onItemClick }: SidebarProps) {
           title="Open Settings & Profile"
         >
           <div className="h-8 w-8 rounded-full bg-slate-900 text-white font-semibold flex items-center justify-center text-xs dark:bg-neutral-100 dark:text-neutral-900">
-            AR
+            {getInitials(profile.name)}
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-semibold text-slate-900 dark:text-neutral-100 truncate">

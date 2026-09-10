@@ -9,6 +9,7 @@ import { SearchModal } from "./search-modal";
 import { NotificationPopover } from "./notification-popover";
 import { ProfileMenu } from "./profile-menu";
 import { useAcademicPreferences } from "@/lib/academic-context";
+import { getInitials } from "@/lib/utils";
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -126,13 +127,13 @@ export function TopBar({ onMenuClick }: TopBarProps) {
               className="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
               <div className="h-8 w-8 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs shadow-xs dark:bg-neutral-100 dark:text-neutral-900">
-                AR
+                {getInitials(profile.name)}
               </div>
               <div className="hidden xl:flex flex-col text-left">
                 <span className="text-xs font-semibold text-slate-900 dark:text-neutral-100">
                   {profile.name}
                 </span>
-                <span className="text-[10px] text-slate-400">Sem {currentSemester} • CSE</span>
+                <span className="text-[10px] text-slate-400">Sem {currentSemester} • {profile.branch || "Engineering"}</span>
               </div>
             </button>
 

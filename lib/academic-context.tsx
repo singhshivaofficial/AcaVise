@@ -14,6 +14,8 @@ import {
   getSemesterEvents,
 } from "./mock-data";
 
+import { createClient } from "./supabase/client";
+
 export interface AcademicSettingsState {
   profile: UserProfile;
   academicRules: {
@@ -69,7 +71,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const [currentSemester, setCurrentSemesterState] = React.useState<string>("5");
   const [isHydrated, setIsHydrated] = React.useState(false);
 
-  // Initialize from localStorage safely on client mount
+  // Initialize from localStorage and sync with Supabase Auth
   React.useEffect(() => {
     try {
       const saved = localStorage.getItem("acavise_settings");
@@ -91,6 +93,65 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsHydrated(true);
     }
+
+    const supabase = createClient();
+
+    // Fetch authenticated user profile details from Supabase Auth
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const meta = user.user_metadata || {};
+        const fullName = meta.full_name || meta.name || user.email?.split("@")[0] || "Student";
+        const userBranch = meta.branch || "Engineering";
+        const userSemester = meta.semester ? String(meta.semester) : undefined;
+        const userTargetCgpa = meta.target_cgpa ? parseFloat(meta.target_cgpa) : undefined;
+
+        setSettings((prev) => ({
+          ...prev,
+          profile: {
+            ...prev.profile,
+            name: fullName,
+            email: user.email || prev.profile.email,
+            branch: userBranch,
+            semester: userSemester ? parseInt(userSemester, 10) : prev.profile.semester,
+            targetCgpa: userTargetCgpa || prev.profile.targetCgpa,
+          },
+        }));
+        if (userSemester) {
+          setCurrentSemesterState(userSemester);
+        }
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const meta = session.user.user_metadata || {};
+        const fullName = meta.full_name || meta.name || session.user.email?.split("@")[0] || "Student";
+        const userBranch = meta.branch || "Engineering";
+        const userSemester = meta.semester ? String(meta.semester) : undefined;
+        const userTargetCgpa = meta.target_cgpa ? parseFloat(meta.target_cgpa) : undefined;
+
+        setSettings((prev) => ({
+          ...prev,
+          profile: {
+            ...prev.profile,
+            name: fullName,
+            email: session.user.email || prev.profile.email,
+            branch: userBranch,
+            semester: userSemester ? parseInt(userSemester, 10) : prev.profile.semester,
+            targetCgpa: userTargetCgpa || prev.profile.targetCgpa,
+          },
+        }));
+        if (userSemester) {
+          setCurrentSemesterState(userSemester);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Sync theme class to document.documentElement

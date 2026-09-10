@@ -7,15 +7,16 @@ import { BookOpenCheck, Lock, Mail, ArrowRight, AlertCircle } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = React.useState("alex.rivera@eng.univ.edu");
-  const [password, setPassword] = React.useState("mock-password");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       setError("Please enter both email and password.");
@@ -25,15 +26,30 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
-    setTimeout(() => {
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          "acavise_mock_user",
-          JSON.stringify({ email: email.trim(), loggedInAt: new Date().toISOString() })
-        );
+    try {
+      const supabase = createClient();
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      });
+
+      if (authError) {
+        setError(authError.message || "Invalid login credentials. Please try again.");
+        setIsLoading(false);
+        return;
       }
-      router.push("/dashboard");
-    }, 500);
+
+      if (data?.session) {
+        router.push("/dashboard");
+        router.refresh();
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred during sign in.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -99,10 +115,6 @@ export default function LoginPage() {
                   leftIcon={<Lock className="h-4 w-4" />}
                   required
                 />
-              </div>
-
-              <div className="rounded-lg bg-slate-100 dark:bg-neutral-800/60 p-3 text-xs text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-neutral-700">
-                <span className="font-semibold text-slate-900 dark:text-neutral-100">Step 1 UI Demo:</span> Authentication state is simulated locally. Supabase Auth will be integrated in Step 2.
               </div>
 
               <Button type="submit" isLoading={isLoading} className="w-full gap-2">
