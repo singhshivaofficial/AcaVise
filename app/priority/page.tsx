@@ -18,11 +18,12 @@ import {
   Check,
 } from "lucide-react";
 import { useAcademicPreferences } from "@/lib/academic-context";
-import { getSemesterPriorities } from "@/lib/mock-data";
+import Link from "next/link";
+import { StudyPriorityItem } from "@/types";
 
 export default function PriorityPage() {
-  const { currentSemester } = useAcademicPreferences();
-  const [selectedSemester, setSelectedSemester] = React.useState(currentSemester || "5");
+  const { currentSemester, getSemesterSubjectsList } = useAcademicPreferences();
+  const [selectedSemester, setSelectedSemester] = React.useState(currentSemester || "1");
   const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({
     pri_1: true,
   });
@@ -33,11 +34,43 @@ export default function PriorityPage() {
     setSelectedSemester(currentSemester);
   }, [currentSemester]);
 
-  const currentNum = parseInt(currentSemester, 10) || 5;
+  const currentNum = parseInt(currentSemester, 10) || 1;
   const selectedNum = parseInt(selectedSemester, 10) || 1;
   const isSelectedFuture = selectedNum > currentNum;
 
-  const currentPriorities = getSemesterPriorities(selectedSemester, currentSemester);
+  const semSubjects = getSemesterSubjectsList(selectedSemester);
+
+  const currentPriorities: StudyPriorityItem[] = React.useMemo(() => {
+    if (semSubjects.length === 0) return [];
+    return semSubjects
+      .map((sub, index) => {
+        const score = sub.currentScore || 0;
+        const urgency: "High" | "Medium" | "Low" =
+          score < 65 ? "High" : score < 80 ? "Medium" : "Low";
+        const priorityScore = Math.max(10, 100 - score);
+
+        return {
+          id: `pri_${sub.id}`,
+          rank: index + 1,
+          subjectName: sub.name,
+          subjectCode: sub.code,
+          priorityScore,
+          urgency,
+          creditWeight: sub.credits,
+          impactFactor: `${sub.credits} Credits - Weight ${sub.credits * 15}%`,
+          reason:
+            score < 65
+              ? `Internal score (${score}%) is below safe threshold for target grade ${sub.targetGrade || "A"}.`
+              : `Current progress is at ${score}%. Continue active practice.`,
+          recommendedAction:
+            score < 65
+              ? "Dedicate 2 focused 45-min review sessions to improve internal assessments."
+              : "Review key conceptual assignments before the upcoming test.",
+        };
+      })
+      .sort((a, b) => b.priorityScore - a.priorityScore)
+      .map((item, idx) => ({ ...item, rank: idx + 1 }));
+  }, [semSubjects]);
 
   const toggleExpand = (id: string) => {
     setExpandedCards((prev) => ({
@@ -48,17 +81,17 @@ export default function PriorityPage() {
 
   const handleExport = () => {
     const textContent = `========================================================
-ACAVISE — STUDY PRIORITY INTELLIGENCE MATRIX
+ACAVISE -- STUDY PRIORITY INTELLIGENCE MATRIX
 Semester: ${selectedSemester}
 Generated on: ${new Date().toLocaleDateString()}
 ========================================================
 
 ${currentPriorities.map(
   (item) => `[RANK #${item.rank}] ${item.subjectName} (${item.subjectCode})
-• Priority Score: ${item.priorityScore}/100 [${item.urgency} Urgency]
-• Weight: ${item.creditWeight} Credits (${item.impactFactor})
-• Algorithmic Diagnosis: ${item.reason}
-• Recommended Study Action: ${item.recommendedAction}
+- Priority Score: ${item.priorityScore}/100 [${item.urgency} Urgency]
+- Weight: ${item.creditWeight} Credits (${item.impactFactor})
+- Algorithmic Diagnosis: ${item.reason}
+- Recommended Study Action: ${item.recommendedAction}
 --------------------------------------------------------`
 ).join("\n\n")}
 
@@ -196,11 +229,17 @@ AcaVise Academic Visibility & Intelligence Platform
                   ? `Semester ${selectedSemester} is Upcoming / Not Started`
                   : `No Priority Items for Semester ${selectedSemester}`}
               </h4>
-              <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-md mx-auto leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-md mx-auto leading-relaxed mb-4">
                 {isSelectedFuture
                   ? "Study Priority Intelligence algorithmically ranks active subjects based on continuous internal marks, credit weights, and imminent exam schedules. No active subjects are enrolled for this upcoming term."
-                  : "No priority alerts have been generated for this semester."}
+                  : "No subjects enrolled for this semester yet. Add your subjects and continuous evaluation marks in Academics to generate your AI-ranked priority revision matrix."}
               </p>
+              <Link href="/academics">
+                <Button size="sm" className="gap-2 text-xs">
+                  <BookOpen className="h-4 w-4" />
+                  <span>Go to Academics</span>
+                </Button>
+              </Link>
             </Card>
           ) : (
             currentPriorities.map((item) => {
@@ -234,9 +273,9 @@ AcaVise Academic Visibility & Intelligence Platform
                           <span className="font-mono font-bold text-slate-700 dark:text-neutral-300">
                             {item.subjectCode}
                           </span>
-                          <span>•</span>
+                          <span>-</span>
                           <span>{item.creditWeight} Credits</span>
-                          <span>•</span>
+                          <span>-</span>
                           <span>Impact: {item.impactFactor}</span>
                         </div>
                       </div>
@@ -296,7 +335,7 @@ AcaVise Academic Visibility & Intelligence Platform
                       </div>
                       <div className="p-2.5 rounded-lg bg-slate-100/50 dark:bg-neutral-800/60">
                         <span className="font-semibold text-slate-700 dark:text-neutral-300 block">Optimal Revision Window</span>
-                        <span className="text-slate-500 text-[11px]">6:30 PM – 8:00 PM (Daily Block)</span>
+                        <span className="text-slate-500 text-[11px]">6:30 PM - 8:00 PM (Daily Block)</span>
                       </div>
                       <div className="p-2.5 rounded-lg bg-slate-100/50 dark:bg-neutral-800/60">
                         <span className="font-semibold text-slate-700 dark:text-neutral-300 block">Estimated Grade Impact</span>

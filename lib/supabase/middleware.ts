@@ -44,6 +44,8 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute =
     pathname.startsWith('/login') || pathname.startsWith('/signup')
 
+  const isOnboardingRoute = pathname.startsWith('/onboarding')
+
   const isProtectedRoute = [
     '/dashboard',
     '/academics',
@@ -52,18 +54,33 @@ export async function updateSession(request: NextRequest) {
     '/planner',
     '/ai-assistant',
     '/settings',
+    '/onboarding',
   ].some((path) => pathname === path || pathname.startsWith(path + '/'))
 
+  // If unauthenticated and trying to access protected route -> go to /login
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  if (user && isAuthRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+  // If authenticated
+  if (user) {
+    const isOnboardingCompleted = !!user.user_metadata?.onboarding_completed
+
+    // If authenticated but not yet onboarded: force redirect to /onboarding
+    if (!isOnboardingCompleted && !isOnboardingRoute && !pathname.startsWith('/auth')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/onboarding'
+      return NextResponse.redirect(url)
+    }
+
+    // If already onboarded, prevent access to /login, /signup, or /onboarding
+    if (isOnboardingCompleted && (isAuthRoute || isOnboardingRoute)) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

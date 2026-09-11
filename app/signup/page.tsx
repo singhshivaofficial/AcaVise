@@ -3,89 +3,114 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpenCheck, Lock, Mail, User, GraduationCap, ArrowRight, AlertCircle } from "lucide-react";
+import { BookOpenCheck, Mail, ArrowRight, AlertCircle, KeyRound, ArrowLeft, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [formData, setFormData] = React.useState({
-    name: "",
-    email: "",
-    branch: "Computer Science & Engineering",
-    semester: "5",
-    password: "",
-    targetCgpa: "8.80",
-  });
+  const [email, setEmail] = React.useState("");
+  const [otp, setOtp] = React.useState("");
+  const [step, setStep] = React.useState<"email" | "otp">("email");
   const [error, setError] = React.useState("");
-  const [successMessage, setSuccessMessage] = React.useState("");
+  const [message, setMessage] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [resendCooldown, setResendCooldown] = React.useState(0);
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim() || !formData.email.trim() || !formData.password.trim()) {
-      setError("Please complete all required registration fields.");
-      return;
-    }
+  // Cooldown countdown timer
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setError("Please enter a valid student or university email address.");
       return;
     }
 
     setError("");
-    setSuccessMessage("");
+    setMessage("");
     setIsLoading(true);
 
     try {
       const supabase = createClient();
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email.trim(),
-        password: formData.password.trim(),
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
         options: {
-          data: {
-            full_name: formData.name.trim(),
-            name: formData.name.trim(),
-            branch: formData.branch.trim(),
-            semester: formData.semester,
-            target_cgpa: formData.targetCgpa,
-          },
+          shouldCreateUser: true,
         },
       });
 
-      if (signUpError) {
-        setError(signUpError.message || "Failed to create account. Please try again.");
+      if (otpError) {
+        setError(otpError.message || "Failed to send registration code. Please try again.");
         setIsLoading(false);
         return;
       }
 
-      if (data?.user && !data?.session) {
-        // Email confirmation is required
-        setSuccessMessage(
-          `Account created successfully! We have sent a confirmation link to ${formData.email}. Please check your inbox and verify your email to log in.`
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      // If user is immediately logged in
-      if (typeof window !== "undefined" && formData.targetCgpa) {
-        localStorage.setItem("acavise_target_cgpa", formData.targetCgpa);
-      }
-      router.push("/dashboard");
-      router.refresh();
+      setStep("otp");
+      setMessage(`A 6-digit verification code was sent to ${cleanEmail}.`);
+      setResendCooldown(30);
+      setIsLoading(false);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred during signup.");
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanOtp = otp.trim();
+    if (cleanOtp.length < 6) {
+      setError("Please enter the complete 6-digit verification code.");
+      return;
+    }
+
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: cleanOtp,
+        type: "email",
+      });
+
+      if (verifyError) {
+        setError(verifyError.message || "Invalid or expired verification code. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (data?.user) {
+        const isOnboarded = !!data.user.user_metadata?.onboarding_completed;
+        if (!isOnboarded) {
+          router.push("/onboarding");
+        } else {
+          router.push("/dashboard");
+        }
+        router.refresh();
+      } else {
+        router.push("/onboarding");
+        router.refresh();
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
       setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-12 dark:bg-neutral-950">
-      <div className="w-full max-w-lg space-y-6">
+      <div className="w-full max-w-md space-y-6">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center space-y-2">
           <Link href="/" className="flex items-center gap-2.5">
@@ -97,115 +122,121 @@ export default function SignupPage() {
             </span>
           </Link>
           <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
-            Create your Student Account
+            {step === "email" ? "Create your Student Account" : "Verify Email OTP"}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-sm">
-            Set up your academic profile to unlock target tracking, priority scoring, and AI assistance.
+          <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-xs">
+            {step === "email"
+              ? "Start tracking targets, study priority scores, and exam planning."
+              : `Enter the 6-digit code sent to ${email.trim()}`}
           </p>
         </div>
 
-        {/* Signup Card Form */}
+        {/* Signup Card */}
         <Card className="shadow-sm border-slate-200/90 dark:border-neutral-800">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base">Student Registration</CardTitle>
-            <CardDescription>Academic profile & credentials</CardDescription>
+            <CardTitle className="text-base">
+              {step === "email" ? "Student Registration" : "Confirm Code"}
+            </CardTitle>
+            <CardDescription>
+              {step === "email"
+                ? "Enter your university email to get started with passwordless access"
+                : "Enter the one-time code to verify your email"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {successMessage ? (
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-900/60 dark:text-emerald-200 space-y-2">
-                  <p className="text-sm font-semibold">Verification Email Sent</p>
-                  <p className="text-xs leading-relaxed">{successMessage}</p>
-                </div>
-                <Button onClick={() => router.push("/login")} className="w-full gap-2">
-                  Go to Sign In <ArrowRight className="h-4 w-4" />
-                </Button>
+            {error && (
+              <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
               </div>
+            )}
+
+            {message && step === "otp" && (
+              <div className="p-3 mb-4 rounded-lg bg-slate-100 border border-slate-200 text-xs text-slate-700 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300">
+                {message}
+              </div>
+            )}
+
+            {step === "email" ? (
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <Input
+                  label="University / Student Email"
+                  type="email"
+                  placeholder="alex@univ.edu"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  leftIcon={<Mail className="h-4 w-4" />}
+                  required
+                  autoFocus
+                />
+
+                <Button type="submit" isLoading={isLoading} className="w-full gap-2">
+                  Create Account with OTP <ArrowRight className="h-4 w-4" />
+                </Button>
+              </form>
             ) : (
-              <form onSubmit={handleSignup} className="space-y-4">
-                {error && (
-                  <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-700 dark:text-neutral-300">
+                    6-Digit Verification Code
+                  </label>
                   <Input
-                    label="Full Name *"
-                    placeholder="e.g. Alex Rivera"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    leftIcon={<User className="h-4 w-4" />}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="123456"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                    leftIcon={<KeyRound className="h-4 w-4" />}
+                    className="font-mono text-center tracking-widest text-lg font-bold"
                     required
-                  />
-                  <Input
-                    label="Student Email *"
-                    type="email"
-                    placeholder="alex@univ.edu"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    leftIcon={<Mail className="h-4 w-4" />}
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="Degree / Major"
-                    placeholder="Computer Science & Engineering"
-                    value={formData.branch}
-                    onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                    leftIcon={<GraduationCap className="h-4 w-4" />}
-                  />
-                  <Select
-                    label="Current Semester"
-                    value={formData.semester}
-                    onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                    options={[
-                      { value: "1", label: "Semester 1" },
-                      { value: "2", label: "Semester 2" },
-                      { value: "3", label: "Semester 3" },
-                      { value: "4", label: "Semester 4" },
-                      { value: "5", label: "Semester 5" },
-                      { value: "6", label: "Semester 6" },
-                      { value: "7", label: "Semester 7" },
-                      { value: "8", label: "Semester 8" },
-                    ]}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="Create Password *"
-                    type="password"
-                    placeholder="••••••••••••"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    leftIcon={<Lock className="h-4 w-4" />}
-                    required
-                  />
-                  <Input
-                    label="Target Graduation CGPA"
-                    type="number"
-                    step="0.05"
-                    placeholder="e.g. 8.80"
-                    value={formData.targetCgpa}
-                    onChange={(e) => setFormData({ ...formData, targetCgpa: e.target.value })}
+                    autoFocus
                   />
                 </div>
 
                 <Button type="submit" isLoading={isLoading} className="w-full gap-2">
-                  Create Account & Enter Dashboard <ArrowRight className="h-4 w-4" />
+                  Verify & Continue to Setup <ArrowRight className="h-4 w-4" />
                 </Button>
+
+                <div className="flex items-center justify-between pt-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("email");
+                      setError("");
+                      setMessage("");
+                    }}
+                    className="text-slate-600 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white flex items-center gap-1 font-medium cursor-pointer"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" /> Change Email
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSendOtp()}
+                    disabled={resendCooldown > 0 || isLoading}
+                    className="text-slate-600 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Code"}
+                  </button>
+                </div>
               </form>
             )}
           </CardContent>
           <CardFooter className="justify-center border-t border-slate-100 dark:border-neutral-800 pt-4 text-xs text-slate-500">
-            Already have an account?{" "}
-            <Link href="/login" className="ml-1 font-semibold text-slate-900 hover:underline dark:text-neutral-100">
-              Sign In
-            </Link>
+            {step === "email" ? (
+              <span>
+                Already registered?{" "}
+                <Link href="/login" className="ml-1 font-semibold text-slate-900 hover:underline dark:text-neutral-100">
+                  Sign In
+                </Link>
+              </span>
+            ) : (
+              <span>
+                Didn&apos;t receive a code? Check spam or click Resend Code.
+              </span>
+            )}
           </CardFooter>
         </Card>
       </div>

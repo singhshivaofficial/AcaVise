@@ -2,40 +2,59 @@
 
 import * as React from "react";
 import { AppShell } from "@/components/layout/app-shell";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Clock, CheckCircle2, Plus, Calendar, Flame, Sparkles } from "lucide-react";
-import { MOCK_STUDY_PLAN } from "@/lib/mock-data";
+import { Clock, CheckCircle2, Plus, Flame } from "lucide-react";
+import { useAcademicPreferences } from "@/lib/academic-context";
 import { StudyPlanDay, StudyPlanTask } from "@/types";
 
+const DEFAULT_EMPTY_DAYS: StudyPlanDay[] = [
+  { day: "Monday", date: "Mon", isToday: true, totalHours: 0, tasks: [] },
+  { day: "Tuesday", date: "Tue", isToday: false, totalHours: 0, tasks: [] },
+  { day: "Wednesday", date: "Wed", isToday: false, totalHours: 0, tasks: [] },
+  { day: "Thursday", date: "Thu", isToday: false, totalHours: 0, tasks: [] },
+  { day: "Friday", date: "Fri", isToday: false, totalHours: 0, tasks: [] },
+  { day: "Saturday", date: "Sat", isToday: false, totalHours: 0, tasks: [] },
+  { day: "Sunday", date: "Sun", isToday: false, totalHours: 0, tasks: [] },
+];
+
 export default function PlannerPage() {
-  const [planDays, setPlanDays] = React.useState<StudyPlanDay[]>(MOCK_STUDY_PLAN);
+  const { userId, subjects } = useAcademicPreferences();
+  const [planDays, setPlanDays] = React.useState<StudyPlanDay[]>(DEFAULT_EMPTY_DAYS);
   const [isClientLoaded, setIsClientLoaded] = React.useState(false);
 
-  // Load from localStorage on client mount only
+  // Storage key scoped to user
+  const storageKey = userId ? `acavise_study_plan_${userId}` : "acavise_study_plan_guest";
+
+  // Load from localStorage on client mount or user change
   React.useEffect(() => {
-    const saved = localStorage.getItem("acavise_study_plan");
-    if (saved) {
-      try {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
         setPlanDays(JSON.parse(saved));
-      } catch {
-        // fallback
+      } else {
+        setPlanDays(DEFAULT_EMPTY_DAYS);
       }
+    } catch {
+      setPlanDays(DEFAULT_EMPTY_DAYS);
     }
     setIsClientLoaded(true);
-  }, []);
+  }, [storageKey]);
 
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
+
+  const defaultSubjectName = subjects.length > 0 ? subjects[0].name : "General Study";
 
   // Add Study Block Form State
   const [formData, setFormData] = React.useState({
     day: "Monday",
-    subject: "Analysis of Algorithms",
+    subject: defaultSubjectName,
     title: "",
     duration: "60",
     priority: "High" as "High" | "Medium" | "Low",
@@ -43,12 +62,19 @@ export default function PlannerPage() {
   });
   const [formError, setFormError] = React.useState("");
 
+  // Keep default subject updated if subjects list changes
+  React.useEffect(() => {
+    if (subjects.length > 0 && formData.subject === "General Study") {
+      setFormData((prev) => ({ ...prev, subject: subjects[0].name }));
+    }
+  }, [subjects, formData.subject]);
+
   // Persist to localStorage
   React.useEffect(() => {
-    if (isClientLoaded) {
-      localStorage.setItem("acavise_study_plan", JSON.stringify(planDays));
+    if (isClientLoaded && typeof window !== "undefined") {
+      localStorage.setItem(storageKey, JSON.stringify(planDays));
     }
-  }, [planDays, isClientLoaded]);
+  }, [planDays, isClientLoaded, storageKey]);
 
   const toggleTask = (dayIndex: number, taskId: string) => {
     setPlanDays((prev) =>
@@ -73,7 +99,7 @@ export default function PlannerPage() {
 
     const newTask: StudyPlanTask = {
       id: `tsk_custom_${Date.now()}`,
-      subject: formData.subject,
+      subject: formData.subject || "General Study",
       title: formData.title.trim(),
       durationMinutes: parseInt(formData.duration, 10) || 60,
       completed: false,
@@ -96,7 +122,7 @@ export default function PlannerPage() {
 
     setFormData({
       day: "Monday",
-      subject: "Analysis of Algorithms",
+      subject: defaultSubjectName,
       title: "",
       duration: "60",
       priority: "High",
@@ -112,8 +138,26 @@ export default function PlannerPage() {
     0
   );
   const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-
   const totalPlannedHours = planDays.reduce((acc, d) => acc + d.totalHours, 0);
+
+  // Subject options for select dropdown
+  const subjectOptions =
+    subjects.length > 0
+      ? subjects.map((s) => ({
+          value: s.name,
+          label: `${s.code ? `${s.code} - ` : ""}${s.name}`,
+        }))
+      : [{ value: "General Study", label: "General Study" }];
+
+  const dayOptions = [
+    { value: "Monday", label: "Monday" },
+    { value: "Tuesday", label: "Tuesday" },
+    { value: "Wednesday", label: "Wednesday" },
+    { value: "Thursday", label: "Thursday" },
+    { value: "Friday", label: "Friday" },
+    { value: "Saturday", label: "Saturday" },
+    { value: "Sunday", label: "Sunday" },
+  ];
 
   return (
     <AppShell>
@@ -171,7 +215,7 @@ export default function PlannerPage() {
                   Total Planned Schedule
                 </p>
                 <p className="text-sm font-bold text-slate-900 dark:text-neutral-100">
-                  {totalPlannedHours.toFixed(1)} Hours • {totalTasks} Sessions
+                  {totalPlannedHours.toFixed(1)} Hours - {totalTasks} Sessions
                 </p>
               </div>
             </div>
@@ -179,7 +223,7 @@ export default function PlannerPage() {
         </div>
 
         {/* Daily Schedule Timeline */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {planDays.map((day, dIdx) => (
             <Card
               key={day.day}
@@ -235,7 +279,7 @@ export default function PlannerPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-1">
                             <span
-                              className={`text-xs font-bold ${
+                              className={`text-xs font-bold truncate ${
                                 task.completed
                                   ? "line-through text-slate-400"
                                   : "text-slate-800 dark:text-neutral-200"
@@ -266,8 +310,8 @@ export default function PlannerPage() {
                             {task.title}
                           </p>
                           {task.timeSlot && (
-                            <span className="mt-1.5 inline-block text-[10px] font-mono text-slate-400">
-                              🕒 {task.timeSlot}
+                            <span className="mt-1.5 flex items-center gap-1 text-[10px] font-mono text-slate-400">
+                              <Clock className="h-3 w-3" /> {task.timeSlot}
                             </span>
                           )}
                         </div>
@@ -302,29 +346,19 @@ export default function PlannerPage() {
                 label="Day of Week"
                 value={formData.day}
                 onChange={(e) => setFormData({ ...formData, day: e.target.value })}
-                options={[
-                  { value: "Monday", label: "Monday" },
-                  { value: "Tuesday", label: "Tuesday" },
-                  { value: "Wednesday", label: "Wednesday" },
-                ]}
+                options={dayOptions}
               />
               <Select
                 label="Course"
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                options={[
-                  { value: "Analysis of Algorithms", label: "CS501 (Algorithms)" },
-                  { value: "Computer Organization", label: "CS502 (COA)" },
-                  { value: "Database Management", label: "CS503 (DBMS)" },
-                  { value: "Discrete Structures", label: "CS504 (Discrete)" },
-                  { value: "OS Lab", label: "CS505 (OS Lab)" },
-                ]}
+                options={subjectOptions}
               />
             </div>
 
             <Input
               label="Task Topic / Goal *"
-              placeholder="e.g. Master Floyd-Warshall and Bellman-Ford algorithms"
+              placeholder="e.g. Master dynamic programming concepts"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
@@ -346,7 +380,12 @@ export default function PlannerPage() {
               <Select
                 label="Priority"
                 value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value as "High" | "Medium" | "Low" })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    priority: e.target.value as "High" | "Medium" | "Low",
+                  })
+                }
                 options={[
                   { value: "High", label: "High" },
                   { value: "Medium", label: "Medium" },
@@ -372,9 +411,7 @@ export default function PlannerPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                Add Block
-              </Button>
+              <Button type="submit">Add Block</Button>
             </div>
           </form>
         </Dialog>

@@ -2,18 +2,6 @@
 
 import * as React from "react";
 import { UserProfile, AcademicMetric, Subject, StudyPriorityItem, UpcomingEvent } from "@/types";
-import {
-  MOCK_USER,
-  SEMESTER_METRICS,
-  SEMESTER_SUBJECTS_DEFAULT,
-  SEMESTER_PRIORITIES_DEFAULT,
-  SEMESTER_EVENTS_DEFAULT,
-  getSemesterMetric,
-  getSemesterSubjects,
-  getSemesterPriorities,
-  getSemesterEvents,
-} from "./mock-data";
-
 import { createClient } from "./supabase/client";
 
 export interface AcademicSettingsState {
@@ -41,15 +29,31 @@ interface AcademicContextType {
   settings: AcademicSettingsState;
   updateSettings: (newSettings: Partial<AcademicSettingsState> | { profile?: Partial<UserProfile> }) => void;
   isHydrated: boolean;
-  // Current semester derived data
+  isAuthenticated: boolean;
+  userId: string | null;
+  // Dynamic user data
   metrics: AcademicMetric;
   subjects: Subject[];
   priorities: StudyPriorityItem[];
   upcomingEvents: UpcomingEvent[];
+  // Subjects management
+  userSubjects: Record<string, Subject[]>;
+  addSubject: (semester: string, subjectData: Omit<Subject, "id">) => void;
+  deleteSubject: (semester: string, subjectId: string) => void;
+  updateSubject: (semester: string, subject: Subject) => void;
+  getSemesterSubjectsList: (semester: string) => Subject[];
 }
 
 const DEFAULT_SETTINGS: AcademicSettingsState = {
-  profile: MOCK_USER,
+  profile: {
+    id: "unauthenticated",
+    name: "Student",
+    email: "",
+    university: "University",
+    branch: "Engineering",
+    semester: 1,
+    targetCgpa: 9.0,
+  },
   academicRules: {
     gradingScale: "10",
     attendanceThreshold: "75",
@@ -68,85 +72,70 @@ const AcademicContext = React.createContext<AcademicContextType | undefined>(und
 
 export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = React.useState<AcademicSettingsState>(DEFAULT_SETTINGS);
-  const [currentSemester, setCurrentSemesterState] = React.useState<string>("5");
+  const [currentSemester, setCurrentSemesterState] = React.useState<string>("1");
   const [isHydrated, setIsHydrated] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [userId, setUserId] = React.useState<string | null>(null);
 
-  // Initialize from localStorage and sync with Supabase Auth
+  // User-scoped subjects dictionary: { [semesterNumber]: Subject[] }
+  const [userSubjects, setUserSubjects] = React.useState<Record<string, Subject[]>>({});
+
+  // Sync Supabase Auth and User Identity
   React.useEffect(() => {
-    try {
-      const saved = localStorage.getItem("acavise_settings");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.profile) {
-          setSettings((prev) => ({
-            ...prev,
-            ...parsed,
-            profile: { ...prev.profile, ...parsed.profile },
-          }));
-          if (parsed.profile.semester) {
-            setCurrentSemesterState(String(parsed.profile.semester));
-          }
-        }
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsHydrated(true);
-    }
-
     const supabase = createClient();
 
-    // Fetch authenticated user profile details from Supabase Auth
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const handleUserSync = (user: any) => {
       if (user) {
+        setIsAuthenticated(true);
+        setUserId(user.id);
         const meta = user.user_metadata || {};
         const fullName = meta.full_name || meta.name || user.email?.split("@")[0] || "Student";
         const userBranch = meta.branch || "Engineering";
-        const userSemester = meta.semester ? String(meta.semester) : undefined;
-        const userTargetCgpa = meta.target_cgpa ? parseFloat(meta.target_cgpa) : undefined;
+        const userSemester = meta.semester ? String(meta.semester) : "1";
+        const userTargetCgpa = meta.target_cgpa ? parseFloat(meta.target_cgpa) : 9.0;
 
         setSettings((prev) => ({
           ...prev,
           profile: {
-            ...prev.profile,
+            id: user.id,
             name: fullName,
-            email: user.email || prev.profile.email,
+            email: user.email || "",
+            university: meta.university || "University",
             branch: userBranch,
-            semester: userSemester ? parseInt(userSemester, 10) : prev.profile.semester,
-            targetCgpa: userTargetCgpa || prev.profile.targetCgpa,
+            semester: parseInt(userSemester, 10) || 1,
+            targetCgpa: userTargetCgpa,
           },
         }));
-        if (userSemester) {
-          setCurrentSemesterState(userSemester);
+        setCurrentSemesterState(userSemester);
+
+        // Load user-scoped subjects
+        try {
+          const storedSubjects = localStorage.getItem(`acavise_user_subjects_${user.id}`);
+          if (storedSubjects) {
+            setUserSubjects(JSON.parse(storedSubjects));
+          } else {
+            // New user starts completely empty
+            setUserSubjects({});
+          }
+        } catch {
+          setUserSubjects({});
         }
+      } else {
+        setIsAuthenticated(false);
+        setUserId(null);
+        setUserSubjects({});
       }
+    };
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      handleUserSync(user);
+      setIsHydrated(true);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        const meta = session.user.user_metadata || {};
-        const fullName = meta.full_name || meta.name || session.user.email?.split("@")[0] || "Student";
-        const userBranch = meta.branch || "Engineering";
-        const userSemester = meta.semester ? String(meta.semester) : undefined;
-        const userTargetCgpa = meta.target_cgpa ? parseFloat(meta.target_cgpa) : undefined;
-
-        setSettings((prev) => ({
-          ...prev,
-          profile: {
-            ...prev.profile,
-            name: fullName,
-            email: session.user.email || prev.profile.email,
-            branch: userBranch,
-            semester: userSemester ? parseInt(userSemester, 10) : prev.profile.semester,
-            targetCgpa: userTargetCgpa || prev.profile.targetCgpa,
-          },
-        }));
-        if (userSemester) {
-          setCurrentSemesterState(userSemester);
-        }
-      }
+      handleUserSync(session?.user ?? null);
     });
 
     return () => {
@@ -188,77 +177,197 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     }
   }, [settings.theme]);
 
+  // Persist user subjects when modified
+  const saveUserSubjects = React.useCallback(
+    (newSubjects: Record<string, Subject[]>) => {
+      setUserSubjects(newSubjects);
+      if (userId && typeof window !== "undefined") {
+        localStorage.setItem(`acavise_user_subjects_${userId}`, JSON.stringify(newSubjects));
+      }
+    },
+    [userId]
+  );
+
+  const addSubject = React.useCallback(
+    (semester: string, subjectData: Omit<Subject, "id">) => {
+      const newSubject: Subject = {
+        ...subjectData,
+        id: `subj_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      };
+
+      saveUserSubjects({
+        ...userSubjects,
+        [semester]: [...(userSubjects[semester] || []), newSubject],
+      });
+    },
+    [userSubjects, saveUserSubjects]
+  );
+
+  const deleteSubject = React.useCallback(
+    (semester: string, subjectId: string) => {
+      const updatedList = (userSubjects[semester] || []).filter((s) => s.id !== subjectId);
+      saveUserSubjects({
+        ...userSubjects,
+        [semester]: updatedList,
+      });
+    },
+    [userSubjects, saveUserSubjects]
+  );
+
+  const updateSubject = React.useCallback(
+    (semester: string, updated: Subject) => {
+      const updatedList = (userSubjects[semester] || []).map((s) => (s.id === updated.id ? updated : s));
+      saveUserSubjects({
+        ...userSubjects,
+        [semester]: updatedList,
+      });
+    },
+    [userSubjects, saveUserSubjects]
+  );
+
+  const getSemesterSubjectsList = React.useCallback(
+    (semester: string): Subject[] => {
+      return userSubjects[semester] || [];
+    },
+    [userSubjects]
+  );
+
   const setCurrentSemester = React.useCallback((sem: string) => {
     setCurrentSemesterState(sem);
-    setSettings((prev) => {
-      const updated: AcademicSettingsState = {
-        ...prev,
-        profile: {
-          ...prev.profile,
-          semester: parseInt(sem, 10) || 5,
-        },
-      };
-      if (typeof window !== "undefined") {
-        localStorage.setItem("acavise_settings", JSON.stringify(updated));
-      }
-      return updated;
-    });
+    setSettings((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        semester: parseInt(sem, 10) || 1,
+      },
+    }));
   }, []);
 
   const setTargetCgpa = React.useCallback((target: number) => {
-    setSettings((prev) => {
-      const updated: AcademicSettingsState = {
-        ...prev,
-        profile: {
-          ...prev.profile,
-          targetCgpa: target,
-        },
-      };
-      if (typeof window !== "undefined") {
-        localStorage.setItem("acavise_settings", JSON.stringify(updated));
-        localStorage.setItem("acavise_target_cgpa", String(target));
-      }
-      return updated;
-    });
+    setSettings((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        targetCgpa: target,
+      },
+    }));
   }, []);
 
   const updateSettings = React.useCallback(
     (newSettings: Partial<AcademicSettingsState> | { profile?: Partial<UserProfile> }) => {
-      setSettings((prev) => {
-        const updated: AcademicSettingsState = {
-          ...prev,
-          ...newSettings,
-          profile: {
-            ...prev.profile,
-            ...(newSettings.profile || {}),
-          },
-        };
+      setSettings((prev) => ({
+        ...prev,
+        ...newSettings,
+        profile: {
+          ...prev.profile,
+          ...(newSettings.profile || {}),
+        },
+      }));
 
-        if (newSettings.profile?.semester) {
-          setCurrentSemesterState(String(newSettings.profile.semester));
-        }
-
-        if (typeof window !== "undefined") {
-          localStorage.setItem("acavise_settings", JSON.stringify(updated));
-          if (updated.profile.targetCgpa) {
-            localStorage.setItem("acavise_target_cgpa", String(updated.profile.targetCgpa));
-          }
-        }
-
-        return updated;
-      });
+      if (newSettings.profile?.semester) {
+        setCurrentSemesterState(String(newSettings.profile.semester));
+      }
     },
     []
   );
 
-  // Derived semester metrics & data for active current semester
-  const metrics =
-    getSemesterMetric(currentSemester, currentSemester) ||
-    SEMESTER_METRICS[currentSemester] ||
-    SEMESTER_METRICS["1"];
-  const subjects = getSemesterSubjects(currentSemester, currentSemester) || [];
-  const priorities = getSemesterPriorities(currentSemester, currentSemester) || [];
-  const upcomingEvents = getSemesterEvents(currentSemester, currentSemester) || [];
+  // Active current semester subjects
+  const currentSubjects = userSubjects[currentSemester] || [];
+
+  // Calculate real metrics from user subjects
+  const metrics: AcademicMetric = React.useMemo(() => {
+    if (currentSubjects.length === 0) {
+      return {
+        cgpa: 0,
+        targetCgpa: settings.profile.targetCgpa,
+        currentSgpa: 0,
+        attendancePercentage: 0,
+        totalCredits: 120,
+        completedCredits: 0,
+        activeBacklogs: 0,
+      };
+    }
+
+    let totalCredits = 0;
+    let totalScoreWeighted = 0;
+    let totalAttendanceWeighted = 0;
+
+    currentSubjects.forEach((sub) => {
+      const cred = sub.credits || 3;
+      totalCredits += cred;
+      totalScoreWeighted += (sub.currentScore || 0) * cred;
+      totalAttendanceWeighted += (sub.attendance || 0) * cred;
+    });
+
+    const avgScore = totalCredits > 0 ? totalScoreWeighted / totalCredits : 0;
+    const avgAttendance = totalCredits > 0 ? totalAttendanceWeighted / totalCredits : 0;
+    const approxSgpa = Math.min(10.0, +(avgScore / 10).toFixed(2));
+
+    return {
+      cgpa: approxSgpa,
+      targetCgpa: settings.profile.targetCgpa,
+      currentSgpa: approxSgpa,
+      attendancePercentage: Math.round(avgAttendance),
+      totalCredits: 120,
+      completedCredits: totalCredits,
+      activeBacklogs: currentSubjects.filter((s) => s.status === "Critical Focus").length,
+    };
+  }, [currentSubjects, settings.profile.targetCgpa]);
+
+  // Dynamic priorities generated only from actual subjects
+  const priorities: StudyPriorityItem[] = React.useMemo(() => {
+    if (currentSubjects.length === 0) return [];
+
+    return currentSubjects
+      .map((sub, index) => {
+        const score = sub.currentScore || 0;
+        const urgency: "High" | "Medium" | "Low" =
+          score < 65 ? "High" : score < 80 ? "Medium" : "Low";
+        const priorityScore = Math.max(10, 100 - score);
+
+        return {
+          id: `pri_${sub.id}`,
+          rank: index + 1,
+          subjectName: sub.name,
+          subjectCode: sub.code,
+          priorityScore,
+          urgency,
+          creditWeight: sub.credits,
+          impactFactor: `${sub.credits} Credits - Weight ${sub.credits * 15}%`,
+          reason:
+            score < 65
+              ? `Internal score (${score}%) is below safe threshold for target grade ${sub.targetGrade}.`
+              : `Current progress is at ${score}%. Continue active practice.`,
+          recommendedAction:
+            score < 65
+              ? "Dedicate 2 focused 45-min review sessions to improve internal assessments."
+              : "Review key conceptual assignments before the upcoming test.",
+        };
+      })
+      .sort((a, b) => b.priorityScore - a.priorityScore)
+      .map((item, idx) => ({ ...item, rank: idx + 1 }));
+  }, [currentSubjects]);
+
+  // Dynamic upcoming events from real assessments
+  const upcomingEvents: UpcomingEvent[] = React.useMemo(() => {
+    const events: UpcomingEvent[] = [];
+    currentSubjects.forEach((sub) => {
+      if (sub.assessments && sub.assessments.length > 0) {
+        sub.assessments.forEach((ass) => {
+          events.push({
+            id: ass.id,
+            title: ass.title,
+            subject: sub.name,
+            date: ass.date || "Upcoming",
+            daysLeft: 5,
+            type: ass.type === "midterm" || ass.type === "endterm" ? "Exam" : ass.type === "assignment" ? "Assignment" : "Quiz",
+            priority: "Medium",
+          });
+        });
+      }
+    });
+    return events;
+  }, [currentSubjects]);
 
   return (
     <AcademicContext.Provider
@@ -271,10 +380,17 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         settings,
         updateSettings,
         isHydrated,
+        isAuthenticated,
+        userId,
         metrics,
-        subjects,
+        subjects: currentSubjects,
         priorities,
         upcomingEvents,
+        userSubjects,
+        addSubject,
+        deleteSubject,
+        updateSubject,
+        getSemesterSubjectsList,
       }}
     >
       {children}

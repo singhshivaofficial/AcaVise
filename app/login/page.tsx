@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpenCheck, Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
+import { BookOpenCheck, Mail, ArrowRight, AlertCircle, KeyRound, ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -12,14 +12,64 @@ import { createClient } from "@/lib/supabase/client";
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [otp, setOtp] = React.useState("");
+  const [step, setStep] = React.useState<"email" | "otp">("email");
   const [error, setError] = React.useState("");
+  const [message, setMessage] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [resendCooldown, setResendCooldown] = React.useState(0);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // Cooldown countdown timer
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
+
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setError("Please enter a valid student or university email address.");
+      return;
+    }
+
+    setError("");
+    setMessage("");
+    setIsLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          shouldCreateUser: true,
+        },
+      });
+
+      if (otpError) {
+        setError(otpError.message || "Failed to send verification code. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      setStep("otp");
+      setMessage(`A 6-digit verification code was sent to ${cleanEmail}.`);
+      setResendCooldown(30);
+      setIsLoading(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError("Please enter both email and password.");
+    const cleanOtp = otp.trim();
+    if (cleanOtp.length < 6) {
+      setError("Please enter the complete 6-digit verification code.");
       return;
     }
 
@@ -28,26 +78,32 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient();
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: email.trim(),
-        password: password.trim(),
+        token: cleanOtp,
+        type: "email",
       });
 
-      if (authError) {
-        setError(authError.message || "Invalid login credentials. Please try again.");
+      if (verifyError) {
+        setError(verifyError.message || "Invalid or expired verification code. Please try again.");
         setIsLoading(false);
         return;
       }
 
-      if (data?.session) {
-        router.push("/dashboard");
+      if (data?.user) {
+        const isOnboarded = !!data.user.user_metadata?.onboarding_completed;
+        if (!isOnboarded) {
+          router.push("/onboarding");
+        } else {
+          router.push("/dashboard");
+        }
         router.refresh();
       } else {
         router.push("/dashboard");
         router.refresh();
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred during sign in.");
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
       setIsLoading(false);
     }
   };
@@ -66,67 +122,121 @@ export default function LoginPage() {
             </span>
           </Link>
           <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
-            Welcome back to AcaVise
+            {step === "email" ? "Sign In to AcaVise" : "Enter Verification Code"}
           </h2>
           <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-xs">
-            Log in to view your academic dashboard, track targets, and prioritize your studies.
+            {step === "email"
+              ? "Passwordless access with secure one-time email verification."
+              : `Enter the 6-digit code sent to ${email.trim()}`}
           </p>
         </div>
 
-        {/* Login Card Form */}
+        {/* Auth Card */}
         <Card className="shadow-sm border-slate-200/90 dark:border-neutral-800">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base">Sign In</CardTitle>
-            <CardDescription>Enter your student or university email credentials</CardDescription>
+            <CardTitle className="text-base">
+              {step === "email" ? "Email Authentication" : "Verify Email OTP"}
+            </CardTitle>
+            <CardDescription>
+              {step === "email"
+                ? "Enter your student or university email to receive a 6-digit login code"
+                : "Check your inbox and enter the 6-digit code below"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              {error && (
-                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <Input
-                label="University / Student Email"
-                type="email"
-                placeholder="alex.rivera@univ.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                leftIcon={<Mail className="h-4 w-4" />}
-                required
-              />
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-700 dark:text-neutral-300">
-                    Password
-                  </label>
-                  <a href="#" onClick={(e) => e.preventDefault()} className="text-xs text-slate-600 hover:underline dark:text-neutral-400">
-                    Forgot password?
-                  </a>
-                </div>
-                <Input
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  leftIcon={<Lock className="h-4 w-4" />}
-                  required
-                />
+            {error && (
+              <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
               </div>
+            )}
 
-              <Button type="submit" isLoading={isLoading} className="w-full gap-2">
-                Continue to Dashboard <ArrowRight className="h-4 w-4" />
-              </Button>
-            </form>
+            {message && step === "otp" && (
+              <div className="p-3 mb-4 rounded-lg bg-slate-100 border border-slate-200 text-xs text-slate-700 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300">
+                {message}
+              </div>
+            )}
+
+            {step === "email" ? (
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <Input
+                  label="Student / University Email"
+                  type="email"
+                  placeholder="alex.rivera@univ.edu"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  leftIcon={<Mail className="h-4 w-4" />}
+                  required
+                  autoFocus
+                />
+
+                <Button type="submit" isLoading={isLoading} className="w-full gap-2">
+                  Send Verification Code <ArrowRight className="h-4 w-4" />
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-700 dark:text-neutral-300">
+                    6-Digit Verification Code
+                  </label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="123456"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                    leftIcon={<KeyRound className="h-4 w-4" />}
+                    className="font-mono text-center tracking-widest text-lg font-bold"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <Button type="submit" isLoading={isLoading} className="w-full gap-2">
+                  Verify & Continue <ArrowRight className="h-4 w-4" />
+                </Button>
+
+                <div className="flex items-center justify-between pt-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("email");
+                      setError("");
+                      setMessage("");
+                    }}
+                    className="text-slate-600 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white flex items-center gap-1 font-medium cursor-pointer"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" /> Change Email
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSendOtp()}
+                    disabled={resendCooldown > 0 || isLoading}
+                    className="text-slate-600 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Code"}
+                  </button>
+                </div>
+              </form>
+            )}
           </CardContent>
           <CardFooter className="justify-center border-t border-slate-100 dark:border-neutral-800 pt-4 text-xs text-slate-500">
-            Don&apos;t have an account yet?{" "}
-            <Link href="/signup" className="ml-1 font-semibold text-slate-900 hover:underline dark:text-neutral-100">
-              Create account
-            </Link>
+            {step === "email" ? (
+              <span>
+                New student?{" "}
+                <Link href="/signup" className="ml-1 font-semibold text-slate-900 hover:underline dark:text-neutral-100">
+                  Register here
+                </Link>
+              </span>
+            ) : (
+              <span>
+                Didn&apos;t receive a code? Check spam or click Resend Code.
+              </span>
+            )}
           </CardFooter>
         </Card>
       </div>
