@@ -45,12 +45,20 @@ export default function LoginPage() {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
         options: {
-          shouldCreateUser: true,
+          shouldCreateUser: false,
         },
       });
 
       if (otpError) {
-        setError(otpError.message || "Failed to send verification code. Please try again.");
+        if (
+          otpError.message?.toLowerCase().includes("signups not allowed") ||
+          otpError.message?.toLowerCase().includes("not found") ||
+          otpError.message?.toLowerCase().includes("user")
+        ) {
+          setError("No AcaVise account found for this email. Please register first.");
+        } else {
+          setError(otpError.message || "Failed to send verification code. Please try again.");
+        }
         setIsLoading(false);
         return;
       }
