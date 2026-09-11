@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Bell, Check, CheckCheck, Trash2, Calendar, Target, AlertTriangle, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAcademicPreferences } from "@/lib/academic-context";
 
 export interface NotificationItem {
   id: string;
@@ -15,63 +16,39 @@ export interface NotificationItem {
   href: string;
 }
 
-const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "notif_1",
-    title: "Analysis of Algorithms Midterm Tomorrow",
-    message: "Midterm Assessment 2 is scheduled for tomorrow at 10:00 AM. Dynamic Programming questions carry 40% weight.",
-    time: "2 hours ago",
-    read: false,
-    type: "exam",
-    href: "/planner",
-  },
-  {
-    id: "notif_2",
-    title: "Study Priority Matrix Updated",
-    message: "CS504 (Discrete Structures) dropped to 61% and was elevated to #2 Focus Priority.",
-    time: "5 hours ago",
-    read: false,
-    type: "priority",
-    href: "/priority",
-  },
-  {
-    id: "notif_3",
-    title: "Target CGPA Feasibility Reminder",
-    message: "Hitting your 8.80 Target requires an SGPA of >= 9.25 in Semester 5 (minimum 3 'O' grades).",
-    time: "1 day ago",
-    read: false,
-    type: "target",
-    href: "/targets",
-  },
-];
-
 interface NotificationPopoverProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 export function NotificationPopover({ isOpen, onClose }: NotificationPopoverProps) {
-  const [notifications, setNotifications] = React.useState<NotificationItem[]>(() => {
+  const { userId } = useAcademicPreferences();
+  const storageKey = userId ? `acavise_notifications_${userId}` : "acavise_notifications_guest";
+
+  const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
+
+  React.useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("acavise_notifications");
+      const saved = localStorage.getItem(storageKey);
       if (saved) {
         try {
-          return JSON.parse(saved);
+          setNotifications(JSON.parse(saved));
         } catch {
-          return DEFAULT_NOTIFICATIONS;
+          setNotifications([]);
         }
+      } else {
+        setNotifications([]);
       }
     }
-    return DEFAULT_NOTIFICATIONS;
-  });
+  }, [storageKey]);
 
   const popoverRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("acavise_notifications", JSON.stringify(notifications));
+      localStorage.setItem(storageKey, JSON.stringify(notifications));
     }
-  }, [notifications]);
+  }, [notifications, storageKey]);
 
   // Click outside to close
   React.useEffect(() => {

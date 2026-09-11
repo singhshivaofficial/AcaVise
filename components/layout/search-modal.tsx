@@ -96,13 +96,13 @@ const SEARCH_ITEMS: SearchItem[] = [
     keywords: ["settings", "profile", "grading", "scale", "attendance threshold", "theme", "dark mode", "preferences"],
   },
   {
-    id: "query-algo-target",
-    title: "How to score A+ in Algorithms?",
+    id: "query-target-grade",
+    title: "How to reach my Target CGPA?",
     category: "Quick Queries",
-    description: "Ask AI Assistant about target marks in CS501",
-    href: "/ai-assistant?q=What+do+I+need+to+score+an+A%2B+in+Algorithms%3F",
+    description: "Ask AI Assistant for score projections and exam strategy",
+    href: "/ai-assistant?q=How+do+I+reach+my+Target+CGPA%3F",
     icon: Sparkles,
-    keywords: ["algorithms", "a+", "score", "cs501", "ask ai", "marks needed"],
+    keywords: ["target", "cgpa", "grades", "score", "ask ai", "marks needed"],
   },
   {
     id: "query-today-study",

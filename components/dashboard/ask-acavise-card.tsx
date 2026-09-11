@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 export function AskAcaViseCard() {
   const suggestedQuestions = [
     "What should I study today?",
-    "What do I need to score an A+ in Algorithms?",
+    "How do I reach my Target CGPA?",
     "Which subject should I prioritize this week?",
   ];
 
@@ -20,7 +20,7 @@ export function AskAcaViseCard() {
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-base">Ask AcaVise — AI Academic Assistant</CardTitle>
+              <CardTitle className="text-base">Ask AcaVise -- AI Academic Assistant</CardTitle>
               <CardDescription>
                 Context-aware guidance based on your grades, targets, and exam schedules
               </CardDescription>

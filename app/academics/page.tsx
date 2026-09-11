@@ -124,7 +124,7 @@ export default function AcademicsPage() {
           </div>
 
           <Button onClick={() => setIsAddModalOpen(true)} className="gap-2 shrink-0">
-            <Plus className="h-4 w-4" /> {isSelectedFuture ? "Pre-Register Subject" : "Add Enrolled Subject"}
+            <Plus className="h-4 w-4" /> {isSelectedFuture ? "Pre-Register Subject" : isSelectedPast ? "Add Past Subject" : "Add Enrolled Subject"}
           </Button>
         </div>
 
@@ -245,11 +245,14 @@ export default function AcademicsPage() {
                 <CardTitle>
                   Semester {selectedSemester} Courses & Assessments{" "}
                   {isSelectedCurrent && <span className="text-xs text-slate-600 dark:text-neutral-400 font-semibold">(Current Active)</span>}
+                  {isSelectedPast && <span className="text-xs text-slate-500 dark:text-neutral-400 font-normal">(Past Semester)</span>}
                   {isSelectedFuture && <span className="text-xs text-slate-400 font-normal">(Upcoming / Not Started)</span>}
                 </CardTitle>
                 <CardDescription>
                   {isSelectedFuture
                     ? "This semester has not commenced yet. Pre-registered courses will appear here once added."
+                    : isSelectedPast
+                    ? "Historical course records for this completed semester."
                     : "Click any subject row to inspect continuous internal evaluations and exam weights."}
                 </CardDescription>
               </div>
@@ -268,11 +271,15 @@ export default function AcademicsPage() {
                   <h4 className="text-sm font-bold text-slate-900 dark:text-neutral-100">
                     {isSelectedFuture
                       ? `Semester ${selectedSemester} is Upcoming`
+                      : isSelectedPast
+                      ? `No Academic Records for Semester ${selectedSemester}`
                       : `No Courses Recorded for Semester ${selectedSemester}`}
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
                     {isSelectedFuture
-                      ? "This semester has not started yet. No course enrollments, attendance records, or continuous internal assessment marks have been recorded."
+                      ? "This semester has not started yet. No course enrollments, attendance records, or assessment marks have been recorded."
+                      : isSelectedPast
+                      ? "No historical courses recorded for this completed semester. Click \"Add Past Subject\" to record your completed courses."
                       : "No course enrollments found for this semester. Click \"Add Enrolled Subject\" to add one."}
                   </p>
                 </div>
@@ -284,7 +291,7 @@ export default function AcademicsPage() {
                     className="gap-1.5 text-xs"
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    {isSelectedFuture ? "Pre-Register Subject" : "Add Enrolled Subject"}
+                    {isSelectedFuture ? "Pre-Register Subject" : isSelectedPast ? "Add Past Subject" : "Add Enrolled Subject"}
                   </Button>
                 </div>
               </div>
@@ -404,10 +411,18 @@ export default function AcademicsPage() {
           setIsAddModalOpen(false);
           setFormError("");
         }}
-        title={isSelectedFuture ? `Pre-Register Semester ${selectedSemester} Course` : `Add Semester ${selectedSemester} Enrolled Subject`}
+        title={
+          isSelectedFuture
+            ? `Pre-Register Semester ${selectedSemester} Course`
+            : isSelectedPast
+            ? `Add Semester ${selectedSemester} Historical Course`
+            : `Add Semester ${selectedSemester} Enrolled Subject`
+        }
         description={
           isSelectedFuture
             ? "Add an upcoming course to your curriculum plan. Assessment marks will remain empty until the term starts."
+            : isSelectedPast
+            ? "Add a completed subject from a previous semester with final marks or grade points."
             : "Enroll a new subject to track continuous assessments, target grades, and attendance."
         }
       >

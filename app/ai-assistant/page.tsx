@@ -6,16 +6,54 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Send, Bot, User, Lightbulb } from "lucide-react";
-import { MOCK_AI_CONVERSATION } from "@/lib/mock-data";
+import { Sparkles, Send, Bot, User, Lightbulb, BookOpen } from "lucide-react";
+import { useAcademicPreferences } from "@/lib/academic-context";
 import { AiChatMessage } from "@/types";
+import Link from "next/link";
 
 function AiChatComponent() {
   const searchParams = useSearchParams();
-  const [messages, setMessages] = React.useState<AiChatMessage[]>(MOCK_AI_CONVERSATION);
+  const { profile, currentSemester, subjects, priorities, targetCgpa, metrics } = useAcademicPreferences();
+
+  const [messages, setMessages] = React.useState<AiChatMessage[]>([]);
   const [inputText, setInputText] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  // Initialize greeting based on user state
+  React.useEffect(() => {
+    const studentName = profile.name || "Student";
+    if (subjects.length === 0) {
+      setMessages([
+        {
+          id: "init_1",
+          sender: "assistant",
+          content: `Hello ${studentName}! I am your AcaVise AI Academic Assistant.\n\nYou currently have **0 enrolled courses recorded for Semester ${currentSemester}**. To unlock personalized study priorities, grade target simulations, and exam strategies, please add your courses in the **Academics** section.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          suggestions: [
+            "How do I add my subjects?",
+            "What is AcaVise's Target CGPA formula?",
+            "How does the Study Priority Engine work?",
+          ],
+        },
+      ]);
+    } else {
+      const topSubjectName = priorities[0]?.subjectName || subjects[0]?.name || "your core subjects";
+      setMessages([
+        {
+          id: "init_1",
+          sender: "assistant",
+          content: `Hello ${studentName}! I'm tracking your **${subjects.length} enrolled subjects** in Semester ${currentSemester} against your target graduation goal of **${targetCgpa.toFixed(2)} CGPA**.\n\nYour current highest focus course is **${topSubjectName}**. How can I help you optimize your study plan or internal marks today?`,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          suggestions: [
+            "What should I study today?",
+            `What do I need in ${topSubjectName} for an A+?`,
+            "How does my attendance look?",
+          ],
+        },
+      ]);
+    }
+  }, [profile.name, currentSemester, subjects, priorities, targetCgpa]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,63 +71,94 @@ function AiChatComponent() {
     }
   }, [searchParams]);
 
-  const generateMockAiResponse = (userPrompt: string): { response: string; suggestions: string[] } => {
+  const generateAiResponse = (userPrompt: string): { response: string; suggestions: string[] } => {
     const lower = userPrompt.toLowerCase();
 
-    if (lower.includes("today") || lower.includes("tonight") || lower.includes("focus")) {
+    if (subjects.length === 0) {
+      if (lower.includes("how do i add") || lower.includes("add")) {
+        return {
+          response:
+            "To add your courses, navigate to the **Academics** tab in the sidebar and click **'+ Add Enrolled Subject'**. You can enter course codes, credit weights, faculty names, and continuous internal assessment marks.",
+          suggestions: [
+            "What is AcaVise's Target CGPA formula?",
+            "How does the Study Priority Engine work?",
+          ],
+        };
+      }
+
+      if (lower.includes("cgpa") || lower.includes("formula") || lower.includes("target")) {
+        return {
+          response: `AcaVise calculates your required semester SGPA using the degree progression formula:\n\n**Required SGPA = [ (Target CGPA × Total Degree Credits) - (Current CGPA × Completed Credits) ] / Remaining Credits**\n\nYour current Target CGPA is set to **${targetCgpa.toFixed(2)}**. Once you record your semester grades, live feasibility projections will appear in the Target Calculator.`,
+          suggestions: [
+            "How do I add my subjects?",
+            "How does the Study Priority Engine work?",
+          ],
+        };
+      }
+
       return {
-        response:
-          "Based on your **Study Priority Engine**, your top priority tonight is **CS501: Analysis of Algorithms (4 Credits)**. You have Midterm Assessment 2 tomorrow at 10:00 AM, and your current performance is 68% against your target of Grade A+. I recommend dedicating a **90-minute block on Dynamic Programming recurrences** before 8:00 PM.",
+        response: `You haven't added any subjects for Semester ${currentSemester} yet. Please add your subjects in the **Academics** section so I can analyze your specific course weights and exam schedules.`,
         suggestions: [
-          "Show me sample algorithm exam questions",
-          "What do I need in Algorithms to score an A+?",
-          "How does my attendance look?",
+          "How do I add my subjects?",
+          "What is AcaVise's Target CGPA formula?",
         ],
       };
     }
 
-    if (lower.includes("a+") || lower.includes("algorithm") || lower.includes("cs501")) {
+    // When user has enrolled subjects
+    const topPriority = priorities[0];
+    const topSubject = subjects.find((s) => s.id === topPriority?.id.replace("pri_", "")) || subjects[0];
+
+    if (lower.includes("today") || lower.includes("tonight") || lower.includes("focus") || lower.includes("study")) {
       return {
-        response:
-          "To score an **A+ in CS501 (Analysis of Algorithms)** with your current 68% internal mark, you need a minimum of **84/100 (≥ 84%) on your End-Semester Examination**. Focus on Unit 3 (Dynamic Programming & Greedy algorithms) and Unit 4 (Graph algorithms), as they represent 45% of total exam weightage.",
+        response: `Based on your **Study Priority Engine**, your top priority is **${topSubject.name} (${topSubject.code || "Core"}, ${topSubject.credits} Credits)**.\n\nYour recorded internal score is **${topSubject.currentScore > 0 ? `${topSubject.currentScore}%` : "pending"}** against your target grade of **Grade ${topSubject.targetGrade || "A+"}**. I recommend dedicating a focused 60-90 minute revision session to review recent lecture notes and continuous internal assessment problems.`,
+        suggestions: [
+          `What do I need in ${topSubject.name} to score an A+?`,
+          "How does my attendance look?",
+          "Which subject is my second priority?",
+        ],
+      };
+    }
+
+    if (lower.includes("a+") || lower.includes("grade") || lower.includes("score") || lower.includes("exam")) {
+      return {
+        response: `For **${topSubject.name} (${topSubject.code})**, to achieve your target **Grade ${topSubject.targetGrade || "A+"}**, you should aim for **≥ 80-85% in your End-Semester Examination**. Ensure all continuous internal assignments and lab submissions are completed to maximize your internal score baseline.`,
         suggestions: [
           "What should I study today?",
-          "Simulate a 9.25 SGPA target",
-          "Which subject is my second priority?",
+          "How does my attendance look?",
+          "What is my target CGPA?",
         ],
       };
     }
 
     if (lower.includes("cgpa") || lower.includes("sgpa") || lower.includes("target")) {
       return {
-        response:
-          "To bridge your current **8.34 CGPA** to your **8.80 Target CGPA** across the remaining 24 credits (Semesters 5 & 6), you need an average SGPA of **≥ 9.25**. This requires securing at least three 'O' grades (10 points) and two 'A+' grades (9 points) in your core 4-credit courses.",
+        response: `Your target graduation CGPA is set to **${targetCgpa.toFixed(2)}**.\n\nWith ${subjects.length} active courses enrolled in Semester ${currentSemester}, maintaining an average score above 80% will keep your academic trajectory well within reach of your goal.`,
         suggestions: [
-          "Which subjects have the highest credit weight?",
-          "What is my weakest subject right now?",
-          "Show me today's revision timetable",
+          "What should I study today?",
+          "How does my attendance look?",
+          `Show my progress in ${topSubject.name}`,
         ],
       };
     }
 
-    if (lower.includes("attendance") || lower.includes("bunk")) {
+    if (lower.includes("attendance")) {
       return {
-        response:
-          "Your overall semester attendance stands at **86.5%**, well above the mandatory 75% cutoff (+11.5% safety buffer). However, **CS504 (Discrete Structures)** is currently at **76.5%**, meaning missing 2 more classes will breach the critical attendance threshold.",
+        response: `Your active semester average attendance is **${metrics.attendancePercentage > 0 ? `${metrics.attendancePercentage}%` : "recorded per course"}** across your enrolled subjects. The university minimum mandatory cutoff is **75%**. Ensure you maintain consistent attendance across all lectures.`,
         suggestions: [
-          "How many classes can I afford to miss?",
           "What should I study today?",
-          "Show my Discrete Structures score",
+          `Show details for ${topSubject.name}`,
+          "What is my Target CGPA?",
         ],
       };
     }
 
     return {
-      response: `I've analyzed your question regarding "${userPrompt}" against your Semester 5 Computer Science records. In **Step 10**, this assistant will connect to OpenAI's GPT-4o API with live access to your syllabus breakdown, test scores, and grade curves to deliver deep customized guidance.`,
+      response: `I've analyzed your question regarding "${userPrompt}" against your Semester ${currentSemester} (${profile.branch || "Engineering"}) enrolled records. In **Step 10**, this assistant will connect to OpenAI's GPT-4o API with real-time syllabus parsing, automated question answering, and predictive grade curving.`,
       suggestions: [
         "What should I study today?",
-        "What do I need to score an A+ in Algorithms?",
-        "How can I improve my CGPA by 0.3?",
+        `What do I need in ${topSubject.name} for an A+?`,
+        "How does my attendance look?",
       ],
     };
   };
@@ -109,7 +178,7 @@ function AiChatComponent() {
     setIsTyping(true);
 
     setTimeout(() => {
-      const { response, suggestions } = generateMockAiResponse(textToSend);
+      const { response, suggestions } = generateAiResponse(textToSend);
       const botMsg: AiChatMessage = {
         id: `bot_${Date.now() + 1}`,
         sender: "assistant",
@@ -119,7 +188,7 @@ function AiChatComponent() {
       };
       setMessages((prev) => [...prev, botMsg]);
       setIsTyping(false);
-    }, 600);
+    }, 500);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -147,7 +216,7 @@ function AiChatComponent() {
 
         <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 text-xs font-medium dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700">
           <Sparkles className="h-3.5 w-3.5 text-slate-600 dark:text-neutral-400 animate-pulse" />
-          <span>Alex Rivera (Sem 5 CSE Context Active)</span>
+          <span>{profile.name || "Student"} (Sem {currentSemester} Active)</span>
         </div>
       </div>
 
